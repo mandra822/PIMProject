@@ -1,78 +1,45 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-class SingleGroup extends StatelessWidget {
+class SingleGroup extends StatefulWidget {
   const SingleGroup({super.key});
+
+  @override
+  State<SingleGroup> createState() => _SingleGroupState();
+}
+
+class _SingleGroupState extends State<SingleGroup> {
+
+  int _selectedIndex = 0;
+
+  static final List<Widget> _widgetOptions = <Widget> [
+
+    Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(12),
+
+        )
+      ],
+    ),
+
+    const Text(
+      'Group Settings'
+    )
+  ];
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: appBar(),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween, // Rozdziela elementy
-        children: [
-          Column(
-            children: [
-              const SizedBox(height: 40),
-              ElevatedButton(
-                onPressed: () {},
-                child: const Text('Group 1'),
-                style: ElevatedButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  backgroundColor: null,
-                ),
-              ),
-              ElevatedButton(
-                onPressed: () {},
-                child: const Text('Edit Expenses'),
-                style: ElevatedButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  backgroundColor: const Color.fromARGB(255, 210, 176, 236),
-                ),
-              ),
-              ElevatedButton(
-                onPressed: () {},
-                child: const Text('Edit people in the group'),
-                style: ElevatedButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  backgroundColor: const Color.fromARGB(255, 210, 176, 236),
-                ),
-              ),
-              ElevatedButton(
-                onPressed: () {},
-                child: const Text('Split expenses'),
-                style: ElevatedButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  backgroundColor: const Color.fromARGB(255, 210, 176, 236),
-                ),
-              ),
-            ],
-          ),
-          Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton(
-                  onPressed: () {},
-                  child: const Text('Save'),
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 20, vertical: 15),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+      body: _widgetOptions.elementAt(_selectedIndex),
+      bottomNavigationBar: bottomBar()
     );
   }
 
@@ -130,4 +97,28 @@ class SingleGroup extends StatelessWidget {
       ],
     );
   }
+
+  BottomNavigationBar bottomBar() {
+    return BottomNavigationBar(
+      items: const <BottomNavigationBarItem> [
+        BottomNavigationBarItem(
+          icon: Icon(
+            Icons.home
+            ),
+          label: 'Home',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(
+            Icons.settings
+            ),
+          label: 'Groups'
+        )
+      ],
+      currentIndex: _selectedIndex,
+      selectedItemColor: Colors.blue[700],
+      backgroundColor: const Color(0xFF8D86F3),
+      onTap: _onItemTapped
+    );
+  }
+  
 }
