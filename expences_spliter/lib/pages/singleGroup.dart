@@ -80,42 +80,50 @@ class SingleGroup extends StatelessWidget {
     return AppBar(
       title: const Text(
         'Expenses Splitter',
+
         style: TextStyle(
-          color: Colors.black,
+          color: Colors.white,
           fontSize: 24,
           fontWeight: FontWeight.bold,
         ),
+
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFF8D86F3),
       centerTitle: true,
       leading: GestureDetector(
-        onTap: () {},
+        onTap: () {
+          // Define your onTap behavior here
+        },
         child: Container(
           alignment: Alignment.center,
+          // decoration: BoxDecoration(
+          //   color: const Color.fromARGB(255, 248, 247, 247),
+          //   borderRadius: BorderRadius.circular(10),
+          // ),
           child: SvgPicture.asset(
             'assets/icons/ArrowLeft2.svg',
             height: 20,
             width: 20,
-          ),
-          decoration: BoxDecoration(
-            color: const Color.fromARGB(255, 248, 247, 247),
-            borderRadius: BorderRadius.circular(10),
+            color: Colors.white
           ),
         ),
       ),
       actions: [
         GestureDetector(
-          onTap: () {},
+          onTap: () {
+            // Define your onTap behavior here
+          },
           child: Container(
             alignment: Alignment.center,
+            // decoration: BoxDecoration(
+            //   color: const Color.fromARGB(255, 248, 247, 247),
+            //   borderRadius: BorderRadius.circular(10),
+            // ),
             child: SvgPicture.asset(
               'assets/icons/dots.svg',
-              height: 5,
-              width: 5,
-            ),
-            decoration: BoxDecoration(
-              color: const Color.fromARGB(255, 248, 247, 247),
-              borderRadius: BorderRadius.circular(10),
+              height: 5, // Adjusted for better visibility
+              width: 5, // Adjusted for better visibility
+              color: Colors.white
             ),
           ),
         ),
