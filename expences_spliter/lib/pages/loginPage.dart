@@ -79,7 +79,7 @@ class LoginPage extends StatelessWidget {
                         child: const Text(
                           'CANCEL',
                           style: TextStyle(
-                            color: Colors.black
+                            color: Colors.blue,
                           ) 
                         )
                       ),
@@ -98,7 +98,7 @@ class LoginPage extends StatelessWidget {
                         child: const Text(
                           'LOG IN',
                           style: TextStyle(
-                            color: Colors.black
+                            color: Colors.blue,
                           )
                         )
                       )

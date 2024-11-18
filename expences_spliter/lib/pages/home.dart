@@ -10,74 +10,118 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 1;
-  static List<Widget> _widgetOptions = <Widget> [
-    Text(
+  static final List<Widget> _widgetOptions = <Widget> [
+
+    const Text(
       'Home Page'
     ),
+
     Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween, // Rozdziela elementy
         children: [
+
           Column(
             children: [
+
               const SizedBox(height: 40),
+
               ElevatedButton(
                 onPressed: () {},
-                child: const Text('Group 1'),
                 style: ElevatedButton.styleFrom(
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  backgroundColor: const Color.fromARGB(255, 210, 176, 236),
+                  backgroundColor: Colors.blue[600],
+                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20)
+                ),
+                child: const Text(
+                  'Group 1',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16
+                  ),
                 ),
               ),
+
+              const SizedBox(height: 12),
+
               ElevatedButton(
                 onPressed: () {},
-                child: const Text('Group 2'),
                 style: ElevatedButton.styleFrom(
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  backgroundColor: const Color.fromARGB(255, 210, 176, 236),
+                  backgroundColor: Colors.blue[600],
+                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20)
+                ),
+                child: const Text(
+                  'Group 2',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16
+                  ),
                 ),
               ),
+
+              const SizedBox(height: 12),
+
               ElevatedButton(
                 onPressed: () {},
-                child: const Text('Group 3'),
                 style: ElevatedButton.styleFrom(
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  backgroundColor: const Color.fromARGB(255, 210, 176, 236),
+                  backgroundColor: Colors.blue[600],
+                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20)
+                ),
+                child: const Text(
+                  'Group 3',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16
+                  ),
                 ),
               ),
+
             ],
           ),
+
           Padding(
             padding: const EdgeInsets.all(20.0),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              mainAxisAlignment: MainAxisAlignment.end,
               children: [
+
                 ElevatedButton(
                   onPressed: () {},
-                  child: const Text('Add Group'),
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 20, vertical: 15),
                   ),
-                ),
-                ElevatedButton(
-                  onPressed: () {},
-                  child: const Text('Delete Group'),
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 20, vertical: 15),
+                  child: const Text(
+                    '+ Add Group',
+                    style: TextStyle(
+                      color: Colors.blue,
+                    )
                   ),
-                ),
+                )
+
+                // ElevatedButton(
+                //   onPressed: () {},
+                //   child: const Text('Delete Group'),
+                //   style: ElevatedButton.styleFrom(
+                //     padding: const EdgeInsets.symmetric(
+                //         horizontal: 20, vertical: 15),
+                //   ),
+                // ),
+
               ],
             ),
           ),
+
         ],
       )
+      
   ];
 
   void _onItemTapped(int index) {
@@ -154,11 +198,15 @@ class _HomePageState extends State<HomePage> {
     return BottomNavigationBar(
       items: const <BottomNavigationBarItem> [
         BottomNavigationBarItem(
-          icon: Icon(Icons.home),
+          icon: Icon(
+            Icons.home
+            ),
           label: 'Home',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.settings),
+          icon: Icon(
+            Icons.settings
+            ),
           label: 'Groups'
         )
       ],
