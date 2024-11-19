@@ -94,13 +94,9 @@ class _HomePageState extends State<HomePage> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
 
-                ElevatedButton(
+                FloatingActionButton.extended(
                   onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 20, vertical: 15),
-                  ),
-                  child: const Text(
+                  label: const Text(
                     '+ Add Group',
                     style: TextStyle(
                       color: Colors.blue,
@@ -153,7 +149,7 @@ class _HomePageState extends State<HomePage> {
         ),
 
       ),
-      backgroundColor: const Color(0xFF8D86F3),
+      backgroundColor: const Color(0xFF76BBBF),
       centerTitle: true,
       leading: GestureDetector(
         onTap: () {
@@ -214,7 +210,7 @@ class _HomePageState extends State<HomePage> {
       ],
       currentIndex: _selectedIndex,
       selectedItemColor: Colors.blue[700],
-      backgroundColor: const Color(0xFF8D86F3),
+      backgroundColor: const Color(0xFF76BBBF),
       onTap: _onItemTapped
     );
   }

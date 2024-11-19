@@ -15,7 +15,7 @@ class LoginPage extends StatelessWidget {
           
           // title section
           Container(
-            color: const Color(0xFF8D86F3),
+            color: const Color(0xFF76BBBF),
             width: double.infinity,
             height: MediaQuery.of(context).size.height * 0.3,
             child: Center(
