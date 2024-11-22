@@ -9,122 +9,26 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-
   int _selectedIndex = 1;
-  
-  static final List<Widget> _widgetOptions = <Widget> [
 
-    const Text(
-      'Home Page'
+  // Lista grup
+  final List<String> _groups = ['Group 1', 'Group 2', 'Group 3'];
+
+  static const List<Widget> _widgetOptions = <Widget>[
+    Text(
+      'Home Page',
     ),
-
-    Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween, // Rozdziela elementy
-        children: [
-
-          Column(
-            children: [
-
-              const SizedBox(height: 40),
-
-              ElevatedButton(
-                onPressed: () {},
-                style: ElevatedButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  backgroundColor: Colors.blue[600],
-                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20)
-                ),
-                child: const Text(
-                  'Group 1',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 12),
-
-              ElevatedButton(
-                onPressed: () {},
-                style: ElevatedButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  backgroundColor: Colors.blue[600],
-                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20)
-                ),
-                child: const Text(
-                  'Group 2',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 12),
-
-              ElevatedButton(
-                onPressed: () {},
-                style: ElevatedButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  backgroundColor: Colors.blue[600],
-                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20)
-                ),
-                child: const Text(
-                  'Group 3',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16
-                  ),
-                ),
-              ),
-
-            ],
-          ),
-
-          Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-
-                FloatingActionButton.extended(
-                  onPressed: () {},
-                  label: const Text(
-                    '+ Add Group',
-                    style: TextStyle(
-                      color: Colors.blue,
-                    )
-                  ),
-                )
-
-                // ElevatedButton(
-                //   onPressed: () {},
-                //   child: const Text('Delete Group'),
-                //   style: ElevatedButton.styleFrom(
-                //     padding: const EdgeInsets.symmetric(
-                //         horizontal: 20, vertical: 15),
-                //   ),
-                // ),
-
-              ],
-            ),
-          ),
-
-        ],
-      )
-      
   ];
 
-  void _onItemTapped(int index) {
+  void _addGroup() {
     setState(() {
-      _selectedIndex = index;
+      _groups.add('Group ${_groups.length + 1}');
+    });
+  }
+
+  void _deleteGroup(int index) {
+    setState(() {
+      _groups.removeAt(index);
     });
   }
 
@@ -132,8 +36,74 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: appBar(),
-      body: _widgetOptions.elementAt(_selectedIndex),
-      bottomNavigationBar: bottomBar()
+      body: _selectedIndex == 1 ? groupsPage() : _widgetOptions.elementAt(0),
+      bottomNavigationBar: bottomBar(),
+    );
+  }
+
+  Widget groupsPage() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
+          child: ListView.builder(
+            itemCount: _groups.length,
+            itemBuilder: (context, index) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(
+                    vertical: 8.0), // Margines między grupami
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {},
+                      style: ElevatedButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        backgroundColor: Colors.blue[600],
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 40, vertical: 20),
+                      ),
+                      child: Text(
+                        _groups[index],
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(
+                        width: 8), // Odstęp między przyciskiem a ikoną kosza
+                    IconButton(
+                      onPressed: () => _deleteGroup(index),
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      iconSize: 32,
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              FloatingActionButton.extended(
+                onPressed: _addGroup,
+                label: const Text(
+                  '+ Add Group',
+                  style: TextStyle(
+                    color: Colors.blue,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -141,13 +111,11 @@ class _HomePageState extends State<HomePage> {
     return AppBar(
       title: const Text(
         'Expenses Splitter',
-
         style: TextStyle(
           color: Colors.white,
           fontSize: 24,
           fontWeight: FontWeight.bold,
         ),
-
       ),
       backgroundColor: const Color(0xFF76BBBF),
       centerTitle: true,
@@ -157,15 +125,11 @@ class _HomePageState extends State<HomePage> {
         },
         child: Container(
           alignment: Alignment.center,
-          // decoration: BoxDecoration(
-          //   color: const Color.fromARGB(255, 248, 247, 247),
-          //   borderRadius: BorderRadius.circular(10),
-          // ),
           child: SvgPicture.asset(
             'assets/icons/ArrowLeft2.svg',
             height: 20,
             width: 20,
-            color: Colors.white
+            color: Colors.white,
           ),
         ),
       ),
@@ -176,15 +140,11 @@ class _HomePageState extends State<HomePage> {
           },
           child: Container(
             alignment: Alignment.center,
-            // decoration: BoxDecoration(
-            //   color: const Color.fromARGB(255, 248, 247, 247),
-            //   borderRadius: BorderRadius.circular(10),
-            // ),
             child: SvgPicture.asset(
               'assets/icons/dots.svg',
-              height: 5, // Adjusted for better visibility
-              width: 5, // Adjusted for better visibility
-              color: Colors.white
+              height: 5,
+              width: 5,
+              color: Colors.white,
             ),
           ),
         ),
@@ -194,108 +154,24 @@ class _HomePageState extends State<HomePage> {
 
   BottomNavigationBar bottomBar() {
     return BottomNavigationBar(
-      items: const <BottomNavigationBarItem> [
+      items: const <BottomNavigationBarItem>[
         BottomNavigationBarItem(
-          icon: Icon(
-            Icons.home
-            ),
+          icon: Icon(Icons.home),
           label: 'Home',
         ),
         BottomNavigationBarItem(
-          icon: Icon(
-            Icons.settings
-            ),
-          label: 'Groups'
-        )
+          icon: Icon(Icons.settings),
+          label: 'Groups',
+        ),
       ],
       currentIndex: _selectedIndex,
       selectedItemColor: Colors.blue[700],
       backgroundColor: const Color(0xFF76BBBF),
-      onTap: _onItemTapped
+      onTap: (index) {
+        setState(() {
+          _selectedIndex = index;
+        });
+      },
     );
   }
-
 }
-
-
-
-
-  
-
-
-  
-
-  
-
-
-
-//old version of body 
-  // body: Center(
-  //       child: Column(
-  //         crossAxisAlignment: CrossAxisAlignment.center,
-  //         mainAxisAlignment: MainAxisAlignment.center,
-  //         children: [
-  //           ElevatedButton(
-  //             onPressed: () {},
-  //             child: const Text('Add New Group'),
-  //           ),
-  //           SizedBox(height: 20),
-  //           ElevatedButton(
-  //             onPressed: () {},
-  //             child: const Text('Open Groups'),
-  //           ),
-  //         ],
-  //       ),
-  //     ),
-
-  // old version of AppBar
-  // AppBar appBar() {
-  //   return AppBar(
-  //     title: const Text(
-  //       'Expenses Splitter',
-  //       style: TextStyle(
-  //         color: Colors.black,
-  //         fontSize: 24,
-  //         fontWeight: FontWeight.bold,
-  //       ),
-  //     ),
-  //     backgroundColor: Colors.white,
-  //     centerTitle: true,
-  //     leading: GestureDetector(
-  //       onTap: () {
-  //         // Define your onTap behavior here
-  //       },
-  //       child: Container(
-  //         alignment: Alignment.center,
-  //         decoration: BoxDecoration(
-  //           color: const Color.fromARGB(255, 248, 247, 247),
-  //           borderRadius: BorderRadius.circular(10),
-  //         ),
-  //         child: SvgPicture.asset(
-  //           'assets/icons/ArrowLeft2.svg',
-  //           height: 20,
-  //           width: 20,
-  //         ),
-  //       ),
-  //     ),
-  //     actions: [
-  //       GestureDetector(
-  //         onTap: () {
-  //           // Define your onTap behavior here
-  //         },
-  //         child: Container(
-  //           alignment: Alignment.center,
-  //           decoration: BoxDecoration(
-  //             color: const Color.fromARGB(255, 248, 247, 247),
-  //             borderRadius: BorderRadius.circular(10),
-  //           ),
-  //           child: SvgPicture.asset(
-  //             'assets/icons/dots.svg',
-  //             height: 5, // Adjusted for better visibility
-  //             width: 5, // Adjusted for better visibility
-  //           ),
-  //         ),
-  //       ),
-  //     ],
-  //   );
-  // }
