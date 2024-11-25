@@ -5,7 +5,7 @@ class User {
   final String email;
   final String login;
   final String password;
-  final List<String> groupsIDs; // możliwe, że zamiast tego będą po prostu nazwy grupek
+  final List<String> groupsIDs; 
 
   const User(
     {
