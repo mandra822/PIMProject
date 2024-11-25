@@ -1,11 +1,15 @@
-import 'package:expences_spliter/pages/expences.dart';
-import 'package:expences_spliter/pages/groups.dart';
 import 'package:expences_spliter/pages/home.dart';
 import 'package:expences_spliter/pages/singleGroup.dart';
 import 'package:expences_spliter/pages/loginPage.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MyApp());
 }
 
@@ -18,7 +22,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(fontFamily: 'Poppins'),
-      home: const SingleGroup(),
+      home: const LoginPage(),
     );
   }
 }

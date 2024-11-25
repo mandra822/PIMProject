@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "586037416930",
+    "project_id": "pim-expenses-splitter",
+    "storage_bucket": "pim-expenses-splitter.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:586037416930:android:9b692cd8c93b8083fb9fbb",
+        "android_client_info": {
+          "package_name": "com.example.expences_spliter"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCl8Qcjz-C8CsJ7tX7w3emZ7e9nOmAfxy0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

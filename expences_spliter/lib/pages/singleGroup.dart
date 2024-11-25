@@ -7,6 +7,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 class SingleGroup extends StatefulWidget {
   const SingleGroup({super.key});
+
   static List<Expense> allExpenses = [
     Expense(
         date: DateTime.now(),
@@ -25,6 +26,7 @@ class SingleGroup extends StatefulWidget {
         splittedPrice: 3.33,
         id: 2),
   ];
+  
   @override
   State<SingleGroup> createState() => _SingleGroupState();
 }

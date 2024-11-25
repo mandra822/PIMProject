@@ -1,4 +1,4 @@
-class Expense {
+ class Expense {
   final DateTime date;
   final String item;
   final double price;
