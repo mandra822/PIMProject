@@ -1,10 +1,29 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
+import 'package:expences_spliter/firestore_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class LoginPage extends StatelessWidget {
-  const LoginPage({super.key});
+  
+  final FirestoreService _firestoreService = FirestoreService();
+
+  final TextEditingController _loginController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+
+  void _checkPassword() {
+    String loginText = _loginController.text;
+    String passwordText = _passwordController.text;
+
+    if (passwordText == _firestoreService.getPassword(loginText)) {
+      print('Success!');
+    }
+    else {
+      print('Failed :((((');
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -40,8 +59,9 @@ class LoginPage extends StatelessWidget {
                 children: [
 
                   // login field
-                  const TextField(
-                    decoration: InputDecoration(
+                  TextField(
+                    controller: _loginController,
+                    decoration: const InputDecoration(
                       labelText: 'Login',
                       border: OutlineInputBorder()
                     )
@@ -50,7 +70,8 @@ class LoginPage extends StatelessWidget {
                   const SizedBox(height: 12),
 
                   // password field
-                  const TextField(
+                  TextField(
+                    controller: _passwordController,
                     decoration: InputDecoration(
                       labelText: 'Password',
                       border: OutlineInputBorder()
@@ -87,7 +108,7 @@ class LoginPage extends StatelessWidget {
                       // button login
                       ElevatedButton(
                         onPressed: () {
-                          // login button functionality
+                          _checkPassword();
                         },
                         style: ElevatedButton.styleFrom(
                           shape: RoundedRectangleBorder(
