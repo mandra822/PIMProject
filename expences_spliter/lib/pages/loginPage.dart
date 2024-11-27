@@ -12,19 +12,6 @@ class LoginPage extends StatelessWidget {
   final TextEditingController _passwordController = TextEditingController();
 
 
-  void _checkPassword() {
-    String loginText = _loginController.text;
-    String passwordText = _passwordController.text;
-
-    if (passwordText == _firestoreService.getPassword(loginText)) {
-      print('Success!');
-    }
-    else {
-      print('Failed :((((');
-    }
-  }
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -108,7 +95,8 @@ class LoginPage extends StatelessWidget {
                       // button login
                       ElevatedButton(
                         onPressed: () {
-                          _checkPassword();
+                          _firestoreService.getPassword(_loginController.text);
+                          // _checkPassword();
                         },
                         style: ElevatedButton.styleFrom(
                           shape: RoundedRectangleBorder(
