@@ -35,5 +35,24 @@
 </head>
 <body>
   <script src="flutter_bootstrap.js" async></script>
+  <script type="module">
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+    // TODO: Add SDKs for Firebase products that you want to use
+    // https://firebase.google.com/docs/web/setup#available-libraries
+  
+    // Your web app's Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyBGQuX6F-_MwyF3svLIn9GqI05C4We3-Uo",
+      authDomain: "pim-expenses-splitter.firebaseapp.com",
+      projectId: "pim-expenses-splitter",
+      storageBucket: "pim-expenses-splitter.firebasestorage.app",
+      messagingSenderId: "586037416930",
+      appId: "1:586037416930:web:fb38ccb840d2d322fb9fbb"
+    };
+  
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+  </script>
 </body>
 </html>

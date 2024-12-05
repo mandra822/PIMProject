@@ -11,6 +11,25 @@ class LoginPage extends StatelessWidget {
   final TextEditingController _loginController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
+  void registerUser() async {
+    String email = "user@example.com";
+    String password = "password123";
+
+    // Dodatkowe dane użytkownika
+    Map<String, dynamic> userData = {
+      "name": "John Doe",
+      "age": 30,
+      "email": email,
+    };
+
+    String? result = await _firestoreService.register(email, password, userData);
+
+    if (result != null) {
+      print("Zarejestrowano pomyślnie z UID: $result");
+    } else {
+      print("Rejestracja nie powiodła się");
+    }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -95,8 +114,7 @@ class LoginPage extends StatelessWidget {
                       // button login
                       ElevatedButton(
                         onPressed: () {
-                          _firestoreService.getPassword(_loginController.text);
-                          // _checkPassword();
+                          
                         },
                         style: ElevatedButton.styleFrom(
                           shape: RoundedRectangleBorder(
@@ -112,11 +130,37 @@ class LoginPage extends StatelessWidget {
                         )
                       )
                     ]
-                  )
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  const Divider(),
+
+                  const SizedBox(height: 12),
+
+                  // button sign up
+                      ElevatedButton(
+                        onPressed: () {
+                          registerUser();
+                        }, 
+                        style: ElevatedButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)
+                          ),
+                          backgroundColor: null
+                        ),
+                        child: const Text(
+                          'or SIGN UP',
+                          style: TextStyle(
+                            color: Colors.blue,
+                          ) 
+                        )
+                      ),
+
                 ],
               )
             )
-          )
+          ),
         ]
       )
     );
