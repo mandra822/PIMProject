@@ -8,28 +8,45 @@ class LoginPage extends StatelessWidget {
   
   final FirestoreService _firestoreService = FirestoreService();
 
-  final TextEditingController _loginController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  void registerUser() async {
-    String email = "user@example.com";
-    String password = "password123";
+  void _showInfo(BuildContext context, String message) {
+    showDialog(
+      context: context, 
+      builder: (context) => AlertDialog(
+        title: Text('INFO'),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            }, 
+            child: Text('OK')
+          )
+        ],
+      )
+    );
+  }
 
-    // Dodatkowe dane użytkownika
-    Map<String, dynamic> userData = {
-      "name": "John Doe",
-      "age": 30,
-      "email": email,
-    };
+  void _logIn(String email, String password, BuildContext context) async {
 
-    String? result = await _firestoreService.register(email, password, userData);
-
-    if (result.toString() == "success") {
-      print("New User Added");
-    } else {
-      print("Registration failed: $result");
+    if (email.isEmpty || password.isEmpty) {
+      _showInfo(context, 'Both email and password are needed to log in!');
+      return;
     }
-}
+
+    String? result = await _firestoreService.logIn(email, password);
+
+    if (result == "success") {
+      _showInfo(context, "Success! U logged in <3");
+      // Navigator.pushReplacementNamed(context, '/home'); 
+    } 
+    else {
+      _showInfo(context, 'ERROR: $result');
+    }
+
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -82,7 +99,7 @@ class LoginPage extends StatelessWidget {
 
                   // email field
                   TextField(
-                    controller: _loginController,
+                    controller: _emailController,
                     decoration: const InputDecoration(
                       labelText: 'Email',
                       border: OutlineInputBorder()
@@ -111,7 +128,8 @@ class LoginPage extends StatelessWidget {
                       // button cancel
                       ElevatedButton(
                         onPressed: () {
-                          // cancel button functionality
+                          _emailController.clear();
+                          _passwordController.clear();
                         }, 
                         style: ElevatedButton.styleFrom(
                           shape: RoundedRectangleBorder(
@@ -130,7 +148,7 @@ class LoginPage extends StatelessWidget {
                       // button login
                       ElevatedButton(
                         onPressed: () {
-                          
+                          _logIn(_emailController.text, _passwordController.text, context);
                         },
                         style: ElevatedButton.styleFrom(
                           shape: RoundedRectangleBorder(
@@ -157,7 +175,7 @@ class LoginPage extends StatelessWidget {
                   // button sign up
                       ElevatedButton(
                         onPressed: () {
-                          //registerUser();
+                          
                         }, 
                         style: ElevatedButton.styleFrom(
                           shape: RoundedRectangleBorder(

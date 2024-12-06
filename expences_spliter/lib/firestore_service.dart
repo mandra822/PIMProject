@@ -5,7 +5,7 @@ class FirestoreService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  
+  //method to register new users
   Future<String?> register(String email, String password, Map<String, dynamic> userData) async {
     try {
       UserCredential userCredential = await _auth.createUserWithEmailAndPassword(email: email, password: password);
@@ -20,6 +20,20 @@ class FirestoreService {
       return e.message;
     }
   }
+
+  //method to log in users
+  Future<String?> logIn(String email, String password) async {
+    try {
+      await _auth.signInWithEmailAndPassword(email: email, password: password);
+
+      return "success";
+
+    } on FirebaseAuthException catch (e) {
+      return e.message;
+    }
+  }
+
+
 
 
 }
