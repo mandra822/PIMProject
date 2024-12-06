@@ -7,6 +7,48 @@ class SignUpPage extends StatelessWidget {
 
   final FirestoreService _firestoreService = FirestoreService();
 
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _ageController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _repeatController = TextEditingController();
+
+  void _showInfo(BuildContext context, String message) {
+    showDialog(
+      context: context, 
+      builder: (context) => AlertDialog(
+        title: Text('INFO'),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            }, 
+            child: Text('OK')
+          )
+        ],
+      )
+    );
+  }
+
+  void _registerUser(String email, String password, String name, int age, BuildContext context) async {
+
+    // Dodatkowe dane użytkownika
+    Map<String, dynamic> userData = {
+      "name": name,
+      "age": age,
+      "email": email,
+    };
+
+    String? result = await _firestoreService.register(email, password, userData);
+
+    if (result.toString() == "success") {
+      _showInfo(context, "New User Added");
+    } else {
+      _showInfo(context, "Registration failed: $result");
+    }
+}
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -57,7 +99,7 @@ class SignUpPage extends StatelessWidget {
 
                   // name field
                   TextField(
-                    //controller: ,
+                    controller: _nameController,
                     decoration: const InputDecoration(
                       labelText: 'Name',
                        border: OutlineInputBorder()
@@ -68,7 +110,7 @@ class SignUpPage extends StatelessWidget {
 
                    // age field
                    TextField(
-                     //controller: ,
+                     controller: _ageController,
                      decoration: const InputDecoration(
                        labelText: 'Age',
                        border: OutlineInputBorder()
@@ -79,7 +121,7 @@ class SignUpPage extends StatelessWidget {
 
                    // email field
                   TextField(
-                    //controller: ,
+                    controller: _emailController,
                     decoration: const InputDecoration(
                       labelText: 'Email',
                       border: OutlineInputBorder()
@@ -90,7 +132,8 @@ class SignUpPage extends StatelessWidget {
 
                    // password field
                    TextField(
-                    //controller: ,
+                    controller: _passwordController,
+                    obscureText: true,
                     decoration: const InputDecoration(
                        labelText: 'Password',
                        border: OutlineInputBorder()
@@ -101,7 +144,8 @@ class SignUpPage extends StatelessWidget {
 
                   // password second field
                   TextField(
-                     //controller: ,
+                     controller: _repeatController,
+                     obscureText: true,
                      decoration: const InputDecoration(
                        labelText: 'Repeat password',
                        border: OutlineInputBorder()
@@ -118,7 +162,11 @@ class SignUpPage extends StatelessWidget {
                       // button cancel
                       ElevatedButton(
                         onPressed: () {
-                          // cancel button functionality
+                          _nameController.clear();
+                          _ageController.clear();
+                          _emailController.clear();
+                          _passwordController.clear();
+                          _repeatController.clear();
                         }, 
                         style: ElevatedButton.styleFrom(
                           shape: RoundedRectangleBorder(
@@ -137,7 +185,20 @@ class SignUpPage extends StatelessWidget {
                       // button signing
                       ElevatedButton(
                         onPressed: () {
-                          
+                          int? age = int.tryParse(_ageController.text);
+                          if (age == null) {
+                            _showInfo(context, "Incorrect age format - not a number");
+                          }
+                          else {
+                            String password = _passwordController.text;
+                            String repeat = _repeatController.text;
+                            if (password != repeat) {
+                              _showInfo(context, "Repeated password is not the same as the first one!");
+                            }
+                            else {
+                              _registerUser(_emailController.text, password, _nameController.text, age, context);
+                            }
+                          }
                         },
                         style: ElevatedButton.styleFrom(
                           shape: RoundedRectangleBorder(

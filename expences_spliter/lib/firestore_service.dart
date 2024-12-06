@@ -14,7 +14,7 @@ class FirestoreService {
 
       await _db.collection('users').doc(uid).set(userData);
 
-      return "Rejestration was successful";
+      return "success";
 
     } on FirebaseAuthException catch (e) {
       return e.message;

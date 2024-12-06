@@ -24,10 +24,10 @@ class LoginPage extends StatelessWidget {
 
     String? result = await _firestoreService.register(email, password, userData);
 
-    if (result != null) {
-      print("Zarejestrowano pomyślnie z UID: $result");
+    if (result.toString() == "success") {
+      print("New User Added");
     } else {
-      print("Rejestracja nie powiodła się");
+      print("Registration failed: $result");
     }
 }
 
@@ -157,7 +157,7 @@ class LoginPage extends StatelessWidget {
                   // button sign up
                       ElevatedButton(
                         onPressed: () {
-                          registerUser();
+                          //registerUser();
                         }, 
                         style: ElevatedButton.styleFrom(
                           shape: RoundedRectangleBorder(
