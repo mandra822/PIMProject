@@ -1,4 +1,5 @@
 import 'package:expences_spliter/pages/home.dart';
+import 'package:expences_spliter/pages/signUpPage.dart';
 import 'package:expences_spliter/pages/singleGroup.dart';
 import 'package:expences_spliter/pages/loginPage.dart';
 import 'package:flutter/material.dart';
@@ -22,7 +23,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(fontFamily: 'Poppins'),
-      home: LoginPage(),
+      home: SignUpPage(),
     );
   }
 }

@@ -2,49 +2,25 @@
 
 import 'package:expences_spliter/firestore_service.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
-class LoginPage extends StatelessWidget {
-  
+class SignUpPage extends StatelessWidget {
+
   final FirestoreService _firestoreService = FirestoreService();
-
-  final TextEditingController _loginController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-
-  void registerUser() async {
-    String email = "user@example.com";
-    String password = "password123";
-
-    // Dodatkowe dane użytkownika
-    Map<String, dynamic> userData = {
-      "name": "John Doe",
-      "age": 30,
-      "email": email,
-    };
-
-    String? result = await _firestoreService.register(email, password, userData);
-
-    if (result != null) {
-      print("Zarejestrowano pomyślnie z UID: $result");
-    } else {
-      print("Rejestracja nie powiodła się");
-    }
-}
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Column(
         children: [
-          
+
           // title section
           Container(
-            color: const Color(0xFF76BBBF),
+            color: Colors.blue,
             width: double.infinity,
             height: MediaQuery.of(context).size.height * 0.2,
             child: Center(
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                mainAxisAlignment: MainAxisAlignment.center,
 
                 children: [
                   Text(
@@ -58,7 +34,7 @@ class LoginPage extends StatelessWidget {
                   ),
 
                   Text(
-                    'Sign In',
+                    'Sign Up',
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       color: Colors.white,
@@ -72,7 +48,6 @@ class LoginPage extends StatelessWidget {
             )
           ),
 
-          // login section
           Expanded(
             child: Padding(
               padding: const EdgeInsets.all(16.0),
@@ -80,9 +55,31 @@ class LoginPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
 
-                  // email field
+                  // name field
                   TextField(
-                    controller: _loginController,
+                    //controller: ,
+                    decoration: const InputDecoration(
+                      labelText: 'Name',
+                       border: OutlineInputBorder()
+                    )
+                  ),
+
+                   const SizedBox(height: 12),
+
+                   // age field
+                   TextField(
+                     //controller: ,
+                     decoration: const InputDecoration(
+                       labelText: 'Age',
+                       border: OutlineInputBorder()
+                     )
+                   ),
+
+                   const SizedBox(height: 12),
+
+                   // email field
+                  TextField(
+                    //controller: ,
                     decoration: const InputDecoration(
                       labelText: 'Email',
                       border: OutlineInputBorder()
@@ -91,19 +88,29 @@ class LoginPage extends StatelessWidget {
 
                   const SizedBox(height: 12),
 
-                  // password field
-                  TextField(
-                    controller: _passwordController,
-                    decoration: InputDecoration(
-                      labelText: 'Password',
-                      border: OutlineInputBorder()
-                    ),
-                    obscureText: true
+                   // password field
+                   TextField(
+                    //controller: ,
+                    decoration: const InputDecoration(
+                       labelText: 'Password',
+                       border: OutlineInputBorder()
+                    )
                   ),
 
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 12),
 
-                  // bottons
+                  // password second field
+                  TextField(
+                     //controller: ,
+                     decoration: const InputDecoration(
+                       labelText: 'Repeat password',
+                       border: OutlineInputBorder()
+                     )
+                   ),
+
+                   const SizedBox(height: 24),
+
+                   // bottons
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
@@ -122,12 +129,12 @@ class LoginPage extends StatelessWidget {
                         child: const Text(
                           'CANCEL',
                           style: TextStyle(
-                            color: Colors.blue,
+                            color: Colors.teal,
                           ) 
                         )
                       ),
 
-                      // button login
+                      // button signing
                       ElevatedButton(
                         onPressed: () {
                           
@@ -139,9 +146,9 @@ class LoginPage extends StatelessWidget {
                           backgroundColor: null
                         ),
                         child: const Text(
-                          'LOG IN',
+                          'SIGN UP',
                           style: TextStyle(
-                            color: Colors.blue,
+                            color: Colors.teal,
                           )
                         )
                       )
@@ -154,30 +161,31 @@ class LoginPage extends StatelessWidget {
 
                   const SizedBox(height: 12),
 
-                  // button sign up
+                  // button back to login page
                       ElevatedButton(
                         onPressed: () {
-                          registerUser();
+                          
                         }, 
                         style: ElevatedButton.styleFrom(
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10)
                           ),
-                          backgroundColor: Colors.blue,
+                          backgroundColor: const Color(0xFF76BBBF),
                         ),
                         child: const Text(
-                          'or SIGN UP',
+                          'or SIGN IN',
                           style: TextStyle(
                             color: Colors.white,
                           ) 
                         )
                       ),
 
-                ],
+                 ]
               )
-            )
-          ),
-        ]
+             )
+          )
+          
+        ],
       )
     );
   }
