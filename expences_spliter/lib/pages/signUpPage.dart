@@ -1,10 +1,10 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
 import 'package:expences_spliter/firestore_service.dart';
+import 'package:expences_spliter/pages/home.dart';
 import 'package:flutter/material.dart';
 
 class SignUpPage extends StatelessWidget {
-
   final FirestoreService _firestoreService = FirestoreService();
 
   final TextEditingController _nameController = TextEditingController();
@@ -32,8 +32,6 @@ class SignUpPage extends StatelessWidget {
   }
 
   void _registerUser(String email, String password, String name, int age, BuildContext context) async {
-
-    // Dodatkowe dane użytkownika
     Map<String, dynamic> userData = {
       "name": name,
       "age": age,
@@ -44,18 +42,21 @@ class SignUpPage extends StatelessWidget {
 
     if (result.toString() == "success") {
       _showInfo(context, "New User Added");
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => HomePage()),
+      );
     } else {
       _showInfo(context, "Registration failed: $result");
     }
-}
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Column(
         children: [
-
-          // title section
           Container(
             color: Colors.blue,
             width: double.infinity,
@@ -63,7 +64,6 @@ class SignUpPage extends StatelessWidget {
             child: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
-
                 children: [
                   Text(
                     'Expences Splitter',
@@ -74,7 +74,6 @@ class SignUpPage extends StatelessWidget {
                       fontWeight: FontWeight.bold
                     )
                   ),
-
                   Text(
                     'Sign Up',
                     textAlign: TextAlign.center,
@@ -84,7 +83,6 @@ class SignUpPage extends StatelessWidget {
                       fontWeight: FontWeight.bold
                     )
                   ),
-
                 ]
               )
             )
@@ -96,8 +94,6 @@ class SignUpPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-
-                  // name field
                   TextField(
                     controller: _nameController,
                     decoration: const InputDecoration(
@@ -108,7 +104,6 @@ class SignUpPage extends StatelessWidget {
 
                    const SizedBox(height: 12),
 
-                   // age field
                    TextField(
                      controller: _ageController,
                      decoration: const InputDecoration(
@@ -119,7 +114,6 @@ class SignUpPage extends StatelessWidget {
 
                    const SizedBox(height: 12),
 
-                   // email field
                   TextField(
                     controller: _emailController,
                     decoration: const InputDecoration(
@@ -130,7 +124,6 @@ class SignUpPage extends StatelessWidget {
 
                   const SizedBox(height: 12),
 
-                   // password field
                    TextField(
                     controller: _passwordController,
                     obscureText: true,
@@ -142,7 +135,6 @@ class SignUpPage extends StatelessWidget {
 
                   const SizedBox(height: 12),
 
-                  // password second field
                   TextField(
                      controller: _repeatController,
                      obscureText: true,
@@ -154,12 +146,9 @@ class SignUpPage extends StatelessWidget {
 
                    const SizedBox(height: 24),
 
-                   // bottons
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-
-                      // button cancel
                       ElevatedButton(
                         onPressed: () {
                           _nameController.clear();
@@ -182,7 +171,6 @@ class SignUpPage extends StatelessWidget {
                         )
                       ),
 
-                      // button signing
                       ElevatedButton(
                         onPressed: () {
                           int? age = int.tryParse(_ageController.text);
@@ -222,33 +210,29 @@ class SignUpPage extends StatelessWidget {
 
                   const SizedBox(height: 12),
 
-                  // button back to login page
-                      ElevatedButton(
-                        onPressed: () {
-                          
-                        }, 
-                        style: ElevatedButton.styleFrom(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10)
-                          ),
-                          backgroundColor: const Color(0xFF76BBBF),
-                        ),
-                        child: const Text(
-                          'or SIGN IN',
-                          style: TextStyle(
-                            color: Colors.white,
-                          ) 
-                        )
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/');
+                    }, 
+                    style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)
                       ),
-
-                 ]
+                      backgroundColor: const Color(0xFF76BBBF),
+                    ),
+                    child: const Text(
+                      'or SIGN IN',
+                      style: TextStyle(
+                        color: Colors.white,
+                      ) 
+                    )
+                  ),
+                ]
               )
-             )
+            )
           )
-          
         ],
       )
     );
   }
-
 }

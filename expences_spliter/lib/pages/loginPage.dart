@@ -1,8 +1,5 @@
-// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
-
 import 'package:expences_spliter/firestore_service.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 class LoginPage extends StatelessWidget {
   
@@ -40,7 +37,7 @@ class LoginPage extends StatelessWidget {
 
     if (result == "success") {
       _showInfo(context, "Success! U logged in <3");
-      // Navigator.pushReplacementNamed(context, '/home'); 
+      Navigator.pushReplacementNamed(context, '/home'); 
     } 
     else {
       _showInfo(context, 'ERROR: $result');
@@ -53,7 +50,6 @@ class LoginPage extends StatelessWidget {
     return Scaffold(
       body: Column(
         children: [
-          
           // title section
           Container(
             color: const Color(0xFF76BBBF),
@@ -62,7 +58,6 @@ class LoginPage extends StatelessWidget {
             child: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-
                 children: [
                   Text(
                     'Expences Splitter',
@@ -73,7 +68,6 @@ class LoginPage extends StatelessWidget {
                       fontWeight: FontWeight.bold
                     )
                   ),
-
                   Text(
                     'Sign In',
                     textAlign: TextAlign.center,
@@ -83,7 +77,6 @@ class LoginPage extends StatelessWidget {
                       fontWeight: FontWeight.bold
                     )
                   ),
-
                 ]
               )
             )
@@ -96,7 +89,6 @@ class LoginPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-
                   // email field
                   TextField(
                     controller: _emailController,
@@ -120,11 +112,10 @@ class LoginPage extends StatelessWidget {
 
                   const SizedBox(height: 24),
 
-                  // bottons
+                  // buttons
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-
                       // button cancel
                       ElevatedButton(
                         onPressed: () {
@@ -173,24 +164,23 @@ class LoginPage extends StatelessWidget {
                   const SizedBox(height: 12),
 
                   // button sign up
-                      ElevatedButton(
-                        onPressed: () {
-                          
-                        }, 
-                        style: ElevatedButton.styleFrom(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10)
-                          ),
-                          backgroundColor: Colors.blue,
-                        ),
-                        child: const Text(
-                          'or SIGN UP',
-                          style: TextStyle(
-                            color: Colors.white,
-                          ) 
-                        )
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/signUp');
+                    }, 
+                    style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)
                       ),
-
+                      backgroundColor: Colors.blue,
+                    ),
+                    child: const Text(
+                      'or SIGN UP',
+                      style: TextStyle(
+                        color: Colors.white,
+                      ) 
+                    )
+                  ),
                 ],
               )
             )
@@ -199,5 +189,4 @@ class LoginPage extends StatelessWidget {
       )
     );
   }
-
 }

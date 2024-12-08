@@ -1,5 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:expences_spliter/pages/singleGroup.dart';
+import 'package:firebase_auth/firebase_auth.dart'; 
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -8,170 +10,175 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
-  int _selectedIndex = 1;
+class HomePageContent extends StatefulWidget {
+  final List<Map<String, dynamic>> groups;  
+  final Function(String) onGroupTap;
+  final Function(String) onAddGroup;
 
-  // Lista grup
-  final List<String> _groups = ['Group 1', 'Group 2', 'Group 3'];
+  const HomePageContent({
+    Key? key,
+    required this.groups,
+    required this.onGroupTap,
+    required this.onAddGroup,
+  }) : super(key: key);
 
-  static const List<Widget> _widgetOptions = <Widget>[
-    Text(
-      'Home Page',
-    ),
-  ];
+  @override
+  _HomePageContentState createState() => _HomePageContentState();
+}
+
+class _HomePageContentState extends State<HomePageContent> {
+  final TextEditingController _groupNameController = TextEditingController();
 
   void _addGroup() {
+    String groupName = _groupNameController.text;
+    if (groupName.isNotEmpty) {
+      widget.onAddGroup(groupName);
+      _groupNameController.clear();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: TextField(
+            controller: _groupNameController,
+            decoration: const InputDecoration(
+              labelText: 'Enter group name',
+              border: OutlineInputBorder(),
+            ),
+          ),
+        ),
+        ElevatedButton(
+          onPressed: _addGroup,
+          child: const Text('Create Group'),
+        ),
+        const SizedBox(height: 16),
+        Expanded(
+          child: ListView.builder(
+            itemCount: widget.groups.length,
+            itemBuilder: (context, index) {
+              return ListTile(
+                title: Text(widget.groups[index]['groupName']),
+                onTap: () {
+                  widget.onGroupTap(widget.groups[index]['groupId']);  // Use groupId here
+                },
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class SettingsPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Text('Settings Page'),
+    );
+  }
+}
+
+class _HomePageState extends State<HomePage> {
+  int _selectedIndex = 0;
+  List<Map<String, dynamic>> _groups = []; 
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchGroups();
+  }
+
+  void _fetchGroups() async {
+    var snapshot = await _firestore.collection('groups').get();
     setState(() {
-      _groups.add('Group ${_groups.length + 1}');
+      _groups = snapshot.docs.map((doc) {
+        return {
+          'groupId': doc['groupId'],
+          'groupName': doc['groupName'],
+        };
+      }).toList();
     });
   }
 
-  void _deleteGroup(int index) {
-    setState(() {
-      _groups.removeAt(index);
+  void _addGroup(String groupName) async {
+    User? user = _auth.currentUser;
+    if (user == null) {
+      return;
+    }
+
+    // Tworzymy grupę i dodajemy użytkownika do listy członków
+    DocumentReference groupRef = await _firestore.collection('groups').add({
+      'groupId': _firestore.collection('groups').doc().id,
+      'groupName': groupName,
+      'usersIDs': [user.uid], 
+      'groupMembers': [user.displayName], 
+      'expensesIDs': [],
     });
+
+    var groupSnapshot = await groupRef.get();
+
+    setState(() {
+      _groups.add({
+        'groupId': groupSnapshot['groupId'],
+        'groupName': groupSnapshot['groupName'],
+      });
+    });
+  }
+
+  void _navigateToGroupDetails(String groupId) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SingleGroup(groupId: groupId), 
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: appBar(),
-      body: _selectedIndex == 1 ? groupsPage() : _widgetOptions.elementAt(0),
+      body: HomePageContent(
+        groups: _groups,
+        onGroupTap: _navigateToGroupDetails,
+        onAddGroup: _addGroup,
+      ),
       bottomNavigationBar: bottomBar(),
-    );
-  }
-
-  Widget groupsPage() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Expanded(
-          child: ListView.builder(
-            itemCount: _groups.length,
-            itemBuilder: (context, index) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(
-                    vertical: 8.0), // Margines między grupami
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    ElevatedButton(
-                      onPressed: () {},
-                      style: ElevatedButton.styleFrom(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        backgroundColor: Colors.blue[600],
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 40, vertical: 20),
-                      ),
-                      child: Text(
-                        _groups[index],
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(
-                        width: 8), // Odstęp między przyciskiem a ikoną kosza
-                    IconButton(
-                      onPressed: () => _deleteGroup(index),
-                      icon: const Icon(Icons.delete, color: Colors.red),
-                      iconSize: 32,
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              FloatingActionButton.extended(
-                onPressed: _addGroup,
-                label: const Text(
-                  '+ Add Group',
-                  style: TextStyle(
-                    color: Colors.blue,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
     );
   }
 
   AppBar appBar() {
     return AppBar(
-      title: const Text(
-        'Expenses Splitter',
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: 24,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      backgroundColor: const Color(0xFF76BBBF),
-      centerTitle: true,
-      leading: GestureDetector(
-        onTap: () {
-          // Define your onTap behavior here
-        },
-        child: Container(
-          alignment: Alignment.center,
-          child: SvgPicture.asset(
-            'assets/icons/ArrowLeft2.svg',
-            height: 20,
-            width: 20,
-            color: Colors.white,
-          ),
-        ),
-      ),
-      actions: [
-        GestureDetector(
-          onTap: () {
-            // Define your onTap behavior here
-          },
-          child: Container(
-            alignment: Alignment.center,
-            child: SvgPicture.asset(
-              'assets/icons/dots.svg',
-              height: 5,
-              width: 5,
-              color: Colors.white,
-            ),
-          ),
-        ),
-      ],
+      title: const Text('Expenses Splitter'),
+      backgroundColor: Colors.blue[600],
     );
   }
 
   BottomNavigationBar bottomBar() {
     return BottomNavigationBar(
-      items: const <BottomNavigationBarItem>[
+      currentIndex: _selectedIndex,
+      onTap: (index) {
+        setState(() {
+          _selectedIndex = index;
+        });
+      },
+      items: const [
         BottomNavigationBarItem(
           icon: Icon(Icons.home),
           label: 'Home',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.settings),
-          label: 'Groups',
+          label: 'Settings',
         ),
       ],
-      currentIndex: _selectedIndex,
-      selectedItemColor: Colors.blue[700],
-      backgroundColor: const Color(0xFF76BBBF),
-      onTap: (index) {
-        setState(() {
-          _selectedIndex = index;
-        });
-      },
     );
   }
 }

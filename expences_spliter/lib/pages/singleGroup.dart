@@ -1,62 +1,92 @@
-// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
-
+import 'package:expences_spliter/pages/balance.dart';
+import 'package:flutter/material.dart';
 import 'package:expences_spliter/components/listItem.dart';
 import 'package:expences_spliter/models/expense.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class SingleGroup extends StatefulWidget {
-  const SingleGroup({super.key});
+  final String groupId;
 
-  static List<Expense> allExpenses = [
-    Expense(
-        date: DateTime.now(),
-        item: 'Papier toaletowy',
-        price: 3.33,
-        user: 'UserA',
-        didYouPay: true,
-        splittedPrice: 3.33,
-        id: 1),
-    Expense(
-        date: DateTime.now(),
-        item: 'Papier toaletowy',
-        price: 3.33,
-        user: 'UserA',
-        didYouPay: true,
-        splittedPrice: 3.33,
-        id: 2),
-  ];
-  
+  const SingleGroup({super.key, required this.groupId});
+
   @override
   State<SingleGroup> createState() => _SingleGroupState();
 }
 
 class _SingleGroupState extends State<SingleGroup> {
   int _selectedIndex = 0;
-
   final TextEditingController _paidByController = TextEditingController();
   final TextEditingController _expenseNameController = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
 
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  List<Expense> _expenses = [];
+  bool _didYouSplit = false; 
+  bool _didYouPay = false;
+
   @override
   void initState() {
     super.initState();
+    _loadExpenses();
   }
 
-  void refreshState() {
-    setState(() {});
+  void _loadExpenses() async {
+    try {
+      final snapshot = await _firestore.collection('groups').doc(widget.groupId).collection('expenses').get();
+      if (mounted) {
+        setState(() {
+          _expenses = snapshot.docs.map((doc) {
+            return Expense.fromMap(doc.data() as Map<String, dynamic>, doc.id);
+          }).toList();
+        });
+      }
+    } catch (e) {
+      print("Error loading expenses: $e");
+    }
   }
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+  void _deleteExpense(String expenseId) async {
+    try {
+      await _firestore.collection('groups').doc(widget.groupId).collection('expenses').doc(expenseId).delete();
+      _loadExpenses();
+    } catch (e) {
+      print("Error deleting expense: $e");
+    }
+  }
+
+  void _addExpenseToFirestore(Expense expense) async {
+    try {
+      final docRef = await _firestore.collection('groups').doc(widget.groupId).collection('expenses').add(expense.toMap());
+      await docRef.update({'id': docRef.id});
+      _loadExpenses();
+    } catch (e) {
+      print("Error adding expense: $e");
+    }
+  }
+
+  void _editExpense(Expense expense) async {
+    try {
+      await _firestore.collection('groups').doc(widget.groupId).collection('expenses').doc(expense.id).update({
+        'item': _expenseNameController.text,
+        'price': double.parse(_amountController.text),
+        'user': _paidByController.text,
+        'didYouSplit': _didYouSplit,
+        'didYouPay': _didYouPay,
+      });
+      _loadExpenses();
+    } catch (e) {
+      print("Error editing expense: $e");
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: appBar(), body: createBody(), bottomNavigationBar: bottomBar());
+      appBar: appBar(),
+      body: createBody(),
+      bottomNavigationBar: bottomBar(),
+    );
   }
 
   Column createBody() {
@@ -64,69 +94,49 @@ class _SingleGroupState extends State<SingleGroup> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Padding(
-            padding: const EdgeInsets.all(12),
-            child: Center(
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                  // Settlement Strings
-                  const Text('You are owed XX zł',
-                      style: TextStyle(
-                          color: Colors.blue,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold)),
-
-                  const SizedBox(height: 8),
-
-                  const Text('UserA owes you YY zł',
-                      style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold)),
-
-                  const SizedBox(height: 4),
-
-                  const Text('UserB owes you ZZ zł',
-                      style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold)),
-
-                  const SizedBox(height: 12),
-
-                  // Settlement Button
-                  ElevatedButton(
-                      onPressed: () {
-                        // settlement functionality
-                      },
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 15),
-                      ),
-                      child: const Text('Settle It All',
-                          style: TextStyle(color: Colors.blue, fontSize: 16))),
-
-                  const SizedBox(height: 12),
-
-                  // Expences List
-                  Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        //
-                        for (var ex in SingleGroup.allExpenses) ...[
-                          ListItem(
-                              onDelete: refreshState,
-                              date: ex.date,
-                              item: ex.item,
-                              price: ex.price,
-                              user: ex.user,
-                              didYouPay: ex.didYouPay,
-                              splittedPrice: ex.splittedPrice,
-                              id: ex.id),
-                          const Divider(),
-                        ]
-                      ]),
-                ]))),
+          padding: const EdgeInsets.all(12),
+          child: Center(
+            child: ElevatedButton(
+              onPressed: () {
+                String groupId = widget.groupId;
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => GroupExpensesPage(groupId: groupId),
+                  ),
+                );
+              },
+              child: const Text('Settle It All'),
+            ),
+          ),
+        ),
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+            itemCount: _expenses.length,
+            itemBuilder: (context, index) {
+              final ex = _expenses[index];
+              return ListItem(
+                onDelete: () => _deleteExpense(ex.id),
+                onEdit: () {
+                  _expenseNameController.text = ex.item;
+                  _amountController.text = ex.price.toString();
+                  _paidByController.text = ex.user;
+                  _didYouSplit = ex.didYouSplit;
+                  _didYouPay = ex.didYouPay;
+                  _showEditExpenseDialog(ex);
+                },
+                date: ex.date,
+                item: ex.item,
+                price: ex.price,
+                user: ex.user,
+                didYouPay: ex.didYouPay,
+                didYouSplit: ex.didYouSplit,
+                id: ex.id,
+              );
+            },
+          ),
+        ),
         Padding(
           padding: const EdgeInsets.all(20.0),
           child: Row(
@@ -136,20 +146,8 @@ class _SingleGroupState extends State<SingleGroup> {
                 onPressed: () {
                   _showAddExpenseDialog(context);
                 },
-                label: const Text('+ Add Expense',
-                    style: TextStyle(
-                      color: Colors.blue,
-                    )),
+                label: const Text('+ Add Expense', style: TextStyle(color: Colors.blue)),
               )
-
-              // ElevatedButton(
-              //   onPressed: () {},
-              //   child: const Text('Delete Group'),
-              //   style: ElevatedButton.styleFrom(
-              //     padding: const EdgeInsets.symmetric(
-              //         horizontal: 20, vertical: 15),
-              //   ),
-              // ),
             ],
           ),
         ),
@@ -157,7 +155,107 @@ class _SingleGroupState extends State<SingleGroup> {
     );
   }
 
+  void _showEditExpenseDialog(Expense expense) {
+    _expenseNameController.text = expense.item;
+    _amountController.text = expense.price.toString();
+    _paidByController.text = expense.user;
+    _didYouSplit = expense.didYouSplit;
+    _didYouPay = expense.didYouPay;
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Edit Expense'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              TextField(
+                controller: _paidByController,
+                decoration: const InputDecoration(labelText: 'Paid by'),
+              ),
+              TextField(
+                controller: _expenseNameController,
+                decoration: const InputDecoration(labelText: 'Expense Name'),
+              ),
+              TextField(
+                controller: _amountController,
+                decoration: const InputDecoration(labelText: 'Amount'),
+                keyboardType: TextInputType.number,
+              ),
+              Row(
+                children: [
+                  Checkbox(
+                    value: _didYouSplit,
+                    onChanged: (bool? newValue) {
+                      setState(() {
+                        _didYouSplit = newValue ?? false;
+                      });
+                    },
+                  ),
+                  const Text('Did you split this expense?'),
+                ],
+              ),
+              Row(
+                children: [
+                  Checkbox(
+                    value: _didYouPay,
+                    onChanged: (bool? newValue) {
+                      setState(() {
+                        _didYouPay = newValue ?? false;
+                      });
+                    },
+                  ),
+                  const Text('Did you pay for this expense?'),
+                ],
+              ),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Save'),
+              onPressed: () {
+                if (_expenseNameController.text.isEmpty ||
+                    _amountController.text.isEmpty ||
+                    _paidByController.text.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Please fill in all fields.')),
+                  );
+                  return;
+                }
+
+                final editedExpense = Expense(
+                  id: expense.id,
+                  item: _expenseNameController.text,
+                  price: double.parse(_amountController.text),
+                  user: _paidByController.text,
+                  didYouPay: _didYouPay,
+                  didYouSplit: _didYouSplit,
+                  date: expense.date,
+                );
+                _editExpense(editedExpense);
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _showAddExpenseDialog(BuildContext context) {
+    _expenseNameController.clear();
+    _amountController.clear();
+    _paidByController.clear();
+    _didYouSplit = false;
+    _didYouPay = false;
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -168,23 +266,42 @@ class _SingleGroupState extends State<SingleGroup> {
             children: <Widget>[
               TextField(
                 controller: _paidByController,
-                decoration: const InputDecoration(
-                  labelText: 'Paid by',
-                ),
-                keyboardType: TextInputType.text,
+                decoration: const InputDecoration(labelText: 'Paid by'),
               ),
               TextField(
                 controller: _expenseNameController,
-                decoration: const InputDecoration(
-                  labelText: 'Expense Name',
-                ),
+                decoration: const InputDecoration(labelText: 'Expense Name'),
               ),
               TextField(
                 controller: _amountController,
-                decoration: const InputDecoration(
-                  labelText: 'Amount',
-                ),
+                decoration: const InputDecoration(labelText: 'Amount'),
                 keyboardType: TextInputType.number,
+              ),
+              Row(
+                children: [
+                  Checkbox(
+                    value: _didYouSplit,
+                    onChanged: (bool? newValue) {
+                      setState(() {
+                        _didYouSplit = newValue ?? false;
+                      });
+                    },
+                  ),
+                  const Text('Did you split this expense?'),
+                ],
+              ),
+              Row(
+                children: [
+                  Checkbox(
+                    value: _didYouPay,
+                    onChanged: (bool? newValue) {
+                      setState(() {
+                        _didYouPay = newValue ?? false;
+                      });
+                    },
+                  ),
+                  const Text('Did you pay for this expense?'),
+                ],
               ),
             ],
           ),
@@ -198,19 +315,25 @@ class _SingleGroupState extends State<SingleGroup> {
             TextButton(
               child: const Text('Add'),
               onPressed: () {
-                setState(() {
-                  SingleGroup.allExpenses.add(Expense(
-                    date: DateTime.now(),
-                    item: _expenseNameController.text,
-                    price: double.parse(_amountController.text),
-                    user: _paidByController.text,
-                    didYouPay: true, //TODO: Calculate if user paid
-                    splittedPrice: 44.44, // TODO: Calculate the splitted price
-                    id: SingleGroup.allExpenses.length +
-                        1, //TODO get id from Firebase
-                  ));
-                });
+                if (_expenseNameController.text.isEmpty ||
+                    _amountController.text.isEmpty ||
+                    _paidByController.text.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Please fill in all fields.')),
+                  );
+                  return;
+                }
 
+                final expense = Expense(
+                  date: DateTime.now(),
+                  item: _expenseNameController.text,
+                  price: double.parse(_amountController.text),
+                  user: _paidByController.text,
+                  didYouPay: _didYouPay,
+                  didYouSplit: _didYouSplit,
+                  id: '',
+                );
+                _addExpenseToFirestore(expense);
                 Navigator.of(context).pop();
               },
             ),
@@ -222,63 +345,33 @@ class _SingleGroupState extends State<SingleGroup> {
 
   AppBar appBar() {
     return AppBar(
-      title: const Text(
-        'Group X',
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: 24,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
+      title: Text(widget.groupId, style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
       backgroundColor: const Color(0xFF76BBBF),
       centerTitle: true,
       leading: GestureDetector(
         onTap: () {
-          // Define your onTap behavior here
+          Navigator.pop(context);
         },
-        child: Container(
-          alignment: Alignment.center,
-          // decoration: BoxDecoration(
-          //   color: const Color.fromARGB(255, 248, 247, 247),
-          //   borderRadius: BorderRadius.circular(10),
-          // ),
-          child: SvgPicture.asset('assets/icons/ArrowLeft2.svg',
-              height: 20, width: 20, color: Colors.white),
-        ),
+        child: Icon(Icons.arrow_back, color: Colors.white),
       ),
-      actions: [
-        GestureDetector(
-          onTap: () {
-            // Define your onTap behavior here
-          },
-          child: Container(
-            alignment: Alignment.center,
-            // decoration: BoxDecoration(
-            //   color: const Color.fromARGB(255, 248, 247, 247),
-            //   borderRadius: BorderRadius.circular(10),
-            // ),
-            child: SvgPicture.asset('assets/icons/dots.svg',
-                height: 5, // Adjusted for better visibility
-                width: 5, // Adjusted for better visibility
-                color: Colors.white),
-          ),
-        ),
-      ],
     );
   }
 
+
   BottomNavigationBar bottomBar() {
     return BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Group',
-          ),
-          BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings')
-        ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: Colors.blue[700],
-        backgroundColor: const Color(0xFF76BBBF),
-        onTap: _onItemTapped);
+      items: const <BottomNavigationBarItem>[
+        BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Group'),
+        BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
+      ],
+      currentIndex: _selectedIndex,
+      selectedItemColor: Colors.blue[700],
+      backgroundColor: const Color(0xFF76BBBF),
+      onTap: (index) {
+        setState(() {
+          _selectedIndex = index;
+        });
+      },
+    );
   }
 }
