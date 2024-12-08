@@ -2,12 +2,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Expense {
   final String id;
-  final String item;
-  final double price;
-  final String user;
-  final DateTime date;
-  final bool didYouPay;
-  final bool didYouSplit;
+  String item;
+  double price;
+  String user;
+  DateTime date;
+  bool didYouPay;
+  bool didYouSplit;
 
   Expense({
     required this.id,
@@ -53,10 +53,12 @@ class Expense {
   factory Expense.fromMap(Map<String, dynamic> map, String id) {
     return Expense(
       id: id,
-      item: map['item'] ?? 'Unknown Item', 
+      item: map['item'] ?? 'Unknown Item',
       price: map['price']?.toDouble() ?? 0.0,
-      user: map['user'] ?? 'Unknown User', 
-      date: map['date'] != null ? (map['date'] as Timestamp).toDate() : DateTime.now(),
+      user: map['user'] ?? 'Unknown User',
+      date: map['date'] != null
+          ? (map['date'] as Timestamp).toDate()
+          : DateTime.now(),
       didYouPay: map['didYouPay'] ?? false,
       didYouSplit: map['didYouSplit'] ?? false,
     );

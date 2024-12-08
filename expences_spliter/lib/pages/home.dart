@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:expences_spliter/pages/singleGroup.dart';
-import 'package:firebase_auth/firebase_auth.dart'; 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatefulWidget {
@@ -11,7 +11,7 @@ class HomePage extends StatefulWidget {
 }
 
 class HomePageContent extends StatefulWidget {
-  final List<Map<String, dynamic>> groups;  
+  final List<Map<String, dynamic>> groups;
   final Function(String) onGroupTap;
   final Function(String) onAddGroup;
 
@@ -28,6 +28,10 @@ class HomePageContent extends StatefulWidget {
 
 class _HomePageContentState extends State<HomePageContent> {
   final TextEditingController _groupNameController = TextEditingController();
+
+  void removeGroup(String groupId) async {
+    await FirebaseFirestore.instance.collection('groups').doc(groupId).delete();
+  }
 
   void _addGroup() {
     String groupName = _groupNameController.text;
@@ -63,8 +67,18 @@ class _HomePageContentState extends State<HomePageContent> {
               return ListTile(
                 title: Text(widget.groups[index]['groupName']),
                 onTap: () {
-                  widget.onGroupTap(widget.groups[index]['groupId']);  // Use groupId here
+                  widget.onGroupTap(
+                      widget.groups[index]['groupId']); // Use groupId here
                 },
+                trailing: IconButton(
+                  icon: const Icon(Icons.delete),
+                  onPressed: () {
+                    setState(() {
+                      removeGroup(widget.groups[index]['groupId']);
+                      widget.groups.removeAt(index);
+                    });
+                  },
+                ),
               );
             },
           ),
@@ -85,7 +99,7 @@ class SettingsPage extends StatelessWidget {
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
-  List<Map<String, dynamic>> _groups = []; 
+  List<Map<String, dynamic>> _groups = [];
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -96,11 +110,14 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _fetchGroups() async {
-    var snapshot = await _firestore.collection('groups').get();
+    var snapshot = await _firestore
+        .collection('groups')
+        .where('userID', isEqualTo: _auth.currentUser!.uid)
+        .get();
     setState(() {
       _groups = snapshot.docs.map((doc) {
         return {
-          'groupId': doc['groupId'],
+          'groupId': doc.id,
           'groupName': doc['groupName'],
         };
       }).toList();
@@ -115,10 +132,10 @@ class _HomePageState extends State<HomePage> {
 
     // Tworzymy grupę i dodajemy użytkownika do listy członków
     DocumentReference groupRef = await _firestore.collection('groups').add({
-      'groupId': _firestore.collection('groups').doc().id,
+      // 'groupId': _firestore.collection('groups').doc().id,
       'groupName': groupName,
-      'usersIDs': [user.uid], 
-      'groupMembers': [user.displayName], 
+      'userID': user.uid,
+      'groupMembers': [],
       'expensesIDs': [],
     });
 
@@ -126,7 +143,7 @@ class _HomePageState extends State<HomePage> {
 
     setState(() {
       _groups.add({
-        'groupId': groupSnapshot['groupId'],
+        'groupId': groupSnapshot.id,
         'groupName': groupSnapshot['groupName'],
       });
     });
@@ -136,7 +153,7 @@ class _HomePageState extends State<HomePage> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => SingleGroup(groupId: groupId), 
+        builder: (context) => SingleGroup(groupId: groupId),
       ),
     );
   }
