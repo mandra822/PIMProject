@@ -56,21 +56,15 @@ class FirestoreService {
 
       for (var expense in expenses) {
         // Obliczanie ile przypada na jedną osobę
-        final double perPerson = expense.didYouSplit
-            ? expense.price / groupMembers.length 
-            : 0.0;
+        final double perPerson = expense.price / groupMembers.length;
 
         // Dodajemy koszt do bilansu użytkownika który zapłacił
         balances[expense.user] = (balances[expense.user] ?? 0.0) + expense.price;
 
         // Jeśli wydatek został podzielony odejmujemy proporcjonalną część innym członkom grupy
-        if (expense.didYouSplit) {
-          for (var member in groupMembers) {
-            if (member != expense.user) {
-              balances[member] = (balances[member] ?? 0.0) - perPerson;
-            }
-          }
-        }
+        for (var member in groupMembers) {
+          balances[member] = (balances[member] ?? 0.0) - perPerson;
+        } 
       }
     } catch (e) {
       print("Error in calculateUserBalances: $e");
@@ -97,8 +91,6 @@ class FirestoreService {
           item: data['item'] as String,
           price: (data['price'] as num).toDouble(),
           user: data['user'] as String,
-          didYouPay: data['didYouPay'] as bool,
-          didYouSplit: data['didYouSplit'] as bool,
           id: data['id'] as String,
         );
       }).toList();

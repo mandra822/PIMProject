@@ -41,46 +41,77 @@ class _HomePageContentState extends State<HomePageContent> {
     }
   }
 
+  void _showNewGroupModal(BuildContext context) {
+    showDialog(
+      context: context, 
+      builder: (context) => AlertDialog(
+        title: Text("New Group"),
+        content: TextField(
+          controller: _groupNameController,
+          decoration: const InputDecoration(labelText: 'New Group Name'),
+        ),
+        actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Save'),
+              onPressed: () {
+                _addGroup();
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+      )
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: TextField(
-            controller: _groupNameController,
-            decoration: const InputDecoration(
-              labelText: 'Enter group name',
-              border: OutlineInputBorder(),
-            ),
-          ),
-        ),
-        ElevatedButton(
-          onPressed: _addGroup,
-          child: const Text('Create Group'),
-        ),
         const SizedBox(height: 16),
         Expanded(
           child: ListView.builder(
             itemCount: widget.groups.length,
             itemBuilder: (context, index) {
-              return ListTile(
-                title: Text(widget.groups[index]['groupName']),
-                onTap: () {
+              return Card(
+                child: ListTile(
+                  title: Text(widget.groups[index]['groupName']),
+                  onTap: () {
                   widget.onGroupTap(
                       widget.groups[index]['groupId']); // Use groupId here
-                },
-                trailing: IconButton(
-                  icon: const Icon(Icons.delete),
-                  onPressed: () {
-                    setState(() {
-                      removeGroup(widget.groups[index]['groupId']);
-                      widget.groups.removeAt(index);
-                    });
                   },
-                ),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.delete, color: Colors.red,),
+                    onPressed: () {
+                      setState(() {
+                        removeGroup(widget.groups[index]['groupId']);
+                        widget.groups.removeAt(index);
+                      });
+                    },
+                  ),
+                )
               );
             },
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              FloatingActionButton.extended(
+                onPressed: () {
+                  _showNewGroupModal(context);
+                },
+                label:
+                    const Text('+ Add new group', style: TextStyle(color: Colors.blue)),
+              ),
+            ],
           ),
         ),
       ],
@@ -162,7 +193,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: appBar(),
-      body: HomePageContent(
+      body: HomePageContent( 
         groups: _groups,
         onGroupTap: _navigateToGroupDetails,
         onAddGroup: _addGroup,
@@ -173,19 +204,32 @@ class _HomePageState extends State<HomePage> {
 
   AppBar appBar() {
     return AppBar(
-      title: const Text('Expenses Splitter'),
-      backgroundColor: Colors.blue[600],
+      title: Text('Expenses Splitter',
+          style: TextStyle(
+            color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold
+          )
+        ),
+      backgroundColor: const Color(0xFF76BBBF),
+      centerTitle: true,
+      leading: GestureDetector(
+        onTap: () {
+          Navigator.pop(context);
+        },
+        child: Icon(Icons.arrow_back, color: Colors.white),
+      ),
     );
   }
 
   BottomNavigationBar bottomBar() {
     return BottomNavigationBar(
       currentIndex: _selectedIndex,
+      selectedItemColor: Colors.blue[700],
       onTap: (index) {
         setState(() {
           _selectedIndex = index;
         });
       },
+      backgroundColor: const Color(0xFF76BBBF),
       items: const [
         BottomNavigationBarItem(
           icon: Icon(Icons.home),

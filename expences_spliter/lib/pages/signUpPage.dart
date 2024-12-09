@@ -41,7 +41,7 @@ class SignUpPage extends StatelessWidget {
     String? result = await _firestoreService.register(email, password, userData);
 
     if (result.toString() == "success") {
-      _showInfo(context, "New User Added");
+      //_showInfo(context, "New User Added");
 
       Navigator.pushReplacement(
         context,
@@ -66,7 +66,7 @@ class SignUpPage extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    'Expences Splitter',
+                    'Expenses Splitter',
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       color: Colors.white,

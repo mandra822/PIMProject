@@ -76,7 +76,7 @@ class GroupExpensesPage extends StatelessWidget {
                                     title: Text(entry.key),
                                     subtitle: Text(
                                       isPositive
-                                          ? "Bilans: ${entry.value.toStringAsFixed(2)}"
+                                          ? "Is owed: ${entry.value.toStringAsFixed(2)}"
                                           : "Needs to Pay: ${(entry.value.abs()).toStringAsFixed(2)}",
                                       style: TextStyle(
                                         color: isPositive ? Colors.green : Colors.red,

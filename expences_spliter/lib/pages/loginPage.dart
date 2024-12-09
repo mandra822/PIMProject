@@ -36,7 +36,7 @@ class LoginPage extends StatelessWidget {
     String? result = await _firestoreService.logIn(email, password);
 
     if (result == "success") {
-      _showInfo(context, "Success! U logged in <3");
+      //_showInfo(context, "Success! U logged in <3");
       Navigator.pushReplacementNamed(context, '/home'); 
     } 
     else {
@@ -60,7 +60,7 @@ class LoginPage extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   Text(
-                    'Expences Splitter',
+                    'Expenses Splitter',
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       color: Colors.white,

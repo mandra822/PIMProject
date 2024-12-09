@@ -24,9 +24,6 @@ class _SingleGroupState extends State<SingleGroup> {
   List<Expense> _expenses = [];
   List<String> _groupMembers = [];
 
-  bool _didYouSplit = false;
-  bool _didYouPay = false;
-
   String groupName = '';
 
   @override
@@ -146,8 +143,6 @@ class _SingleGroupState extends State<SingleGroup> {
         'item': _expenseNameController.text,
         'price': double.parse(_amountController.text),
         'user': _paidByController.text,
-        'didYouSplit': expense.didYouSplit,
-        'didYouPay': expense.didYouPay,
       });
       _loadExpenses();
     } catch (e) {
@@ -197,16 +192,12 @@ class _SingleGroupState extends State<SingleGroup> {
                   _expenseNameController.text = ex.item;
                   _amountController.text = ex.price.toString();
                   _paidByController.text = ex.user;
-                  // _didYouSplit = ex.didYouSplit;
-                  // _didYouPay = ex.didYouPay;
                   _showEditExpenseDialog(ex, context);
                 },
                 date: ex.date,
                 item: ex.item,
                 price: ex.price,
                 user: ex.user,
-                didYouPay: ex.didYouPay,
-                didYouSplit: ex.didYouSplit,
                 id: ex.id,
               );
             },
@@ -254,6 +245,7 @@ class _SingleGroupState extends State<SingleGroup> {
                 controller: _newUserController,
                 decoration: const InputDecoration(labelText: 'Add new member'),
               ),
+              const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () {
                   setState(() {
@@ -349,32 +341,6 @@ class _SingleGroupState extends State<SingleGroup> {
                 decoration: const InputDecoration(labelText: 'Amount'),
                 keyboardType: TextInputType.number,
               ),
-              Row(
-                children: [
-                  Checkbox(
-                    value: expense.didYouSplit,
-                    onChanged: (bool? newValue) {
-                      setState(() {
-                        expense.didYouSplit = newValue ?? false;
-                      });
-                    },
-                  ),
-                  const Text('Did you split this expense?'),
-                ],
-              ),
-              Row(
-                children: [
-                  Checkbox(
-                    value: expense.didYouPay,
-                    onChanged: (bool? newValue) {
-                      setState(() {
-                        expense.didYouPay = newValue ?? false;
-                      });
-                    },
-                  ),
-                  const Text('Did you pay for this expense?'),
-                ],
-              ),
             ],
           ),
           actions: <Widget>[
@@ -401,8 +367,6 @@ class _SingleGroupState extends State<SingleGroup> {
                   item: _expenseNameController.text,
                   price: double.parse(_amountController.text),
                   user: _paidByController.text,
-                  didYouPay: expense.didYouPay,
-                  didYouSplit: expense.didYouSplit,
                   date: expense.date,
                 );
                 _editExpense(editedExpense);
@@ -455,32 +419,6 @@ class _SingleGroupState extends State<SingleGroup> {
                 decoration: const InputDecoration(labelText: 'Amount'),
                 keyboardType: TextInputType.number,
               ),
-              Row(
-                children: [
-                  Checkbox(
-                    value: _didYouSplit,
-                    onChanged: (bool? newValue) {
-                      setState(() {
-                        _didYouSplit = newValue ?? false;
-                      });
-                    },
-                  ),
-                  const Text('Did you split this expense?'),
-                ],
-              ),
-              Row(
-                children: [
-                  Checkbox(
-                    value: _didYouPay,
-                    onChanged: (bool? newValue) {
-                      setState(() {
-                        _didYouPay = newValue ?? false;
-                      });
-                    },
-                  ),
-                  const Text('Did you pay for this expense?'),
-                ],
-              ),
             ],
           ),
           actions: <Widget>[
@@ -507,8 +445,6 @@ class _SingleGroupState extends State<SingleGroup> {
                   item: _expenseNameController.text,
                   price: double.parse(_amountController.text),
                   user: _paidByController.text,
-                  didYouPay: _didYouPay,
-                  didYouSplit: _didYouSplit,
                   id: '',
                 );
                 _addExpenseToFirestore(expense);

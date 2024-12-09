@@ -6,8 +6,6 @@ class Expense {
   double price;
   String user;
   DateTime date;
-  bool didYouPay;
-  bool didYouSplit;
 
   Expense({
     required this.id,
@@ -15,8 +13,6 @@ class Expense {
     required this.price,
     required this.user,
     required this.date,
-    required this.didYouPay,
-    required this.didYouSplit,
   });
 
   Expense copyWith({
@@ -25,8 +21,6 @@ class Expense {
     double? price,
     String? user,
     DateTime? date,
-    bool? didYouPay,
-    bool? didYouSplit,
   }) {
     return Expense(
       id: id ?? this.id,
@@ -34,8 +28,6 @@ class Expense {
       price: price ?? this.price,
       user: user ?? this.user,
       date: date ?? this.date,
-      didYouPay: didYouPay ?? this.didYouPay,
-      didYouSplit: didYouSplit ?? this.didYouSplit,
     );
   }
 
@@ -45,8 +37,6 @@ class Expense {
       'price': price,
       'user': user,
       'date': date,
-      'didYouPay': didYouPay,
-      'didYouSplit': didYouSplit,
     };
   }
 
@@ -57,10 +47,12 @@ class Expense {
       price: map['price']?.toDouble() ?? 0.0,
       user: map['user'] ?? 'Unknown User',
       date: map['date'] != null
-          ? (map['date'] as Timestamp).toDate()
+          ? DateTime(
+              (map['date'] as Timestamp).toDate().year,
+              (map['date'] as Timestamp).toDate().month,
+              (map['date'] as Timestamp).toDate().day,
+            )
           : DateTime.now(),
-      didYouPay: map['didYouPay'] ?? false,
-      didYouSplit: map['didYouSplit'] ?? false,
     );
   }
 }
