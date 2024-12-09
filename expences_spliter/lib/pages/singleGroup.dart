@@ -22,18 +22,40 @@ class _SingleGroupState extends State<SingleGroup> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   List<Expense> _expenses = [];
-  bool _didYouSplit = false; 
-  bool _didYouPay = false;
+  List<String> _groupMembers = [];
+
+  String groupName = '';
 
   @override
   void initState() {
     super.initState();
     _loadExpenses();
+
+    getGroupMembers().then((groupMembers) {
+      setState(() {
+        _groupMembers = groupMembers;
+      });
+    });
+
+    getGroupName();
+  }
+
+  void getGroupName() async {
+    final doc = await _firestore.collection('groups').doc(widget.groupId).get();
+    if (doc.exists) {
+      setState(() {
+        groupName = doc['groupName'];
+      });
+    }
   }
 
   void _loadExpenses() async {
     try {
-      final snapshot = await _firestore.collection('groups').doc(widget.groupId).collection('expenses').get();
+      final snapshot = await _firestore
+          .collection('groups')
+          .doc(widget.groupId)
+          .collection('expenses')
+          .get();
       if (mounted) {
         setState(() {
           _expenses = snapshot.docs.map((doc) {
@@ -46,18 +68,63 @@ class _SingleGroupState extends State<SingleGroup> {
     }
   }
 
+  void removeExpenseByMember(String member) async {
+    try {
+      final snapshot = await _firestore
+          .collection('groups')
+          .doc(widget.groupId)
+          .collection('expenses')
+          .where('user', isEqualTo: member)
+          .get();
+      for (var doc in snapshot.docs) {
+        await doc.reference.delete();
+      }
+      _loadExpenses();
+    } catch (e) {
+      print("Error removing expenses: $e");
+    }
+  }
+
   void _deleteExpense(String expenseId) async {
     try {
-      await _firestore.collection('groups').doc(widget.groupId).collection('expenses').doc(expenseId).delete();
+      await _firestore
+          .collection('groups')
+          .doc(widget.groupId)
+          .collection('expenses')
+          .doc(expenseId)
+          .delete();
       _loadExpenses();
     } catch (e) {
       print("Error deleting expense: $e");
     }
   }
 
+  Future<List<String>> getGroupMembers() async {
+    final doc = await _firestore.collection('groups').doc(widget.groupId).get();
+
+    if (doc.exists) {
+      if (doc['groupMembers'] != null) {
+        return List<String>.from(doc['groupMembers']);
+      } else {
+        return [];
+      }
+    }
+    return [];
+  }
+
+  void updateMembersFirestore() async {
+    await _firestore.collection('groups').doc(widget.groupId).update({
+      'groupMembers': _groupMembers,
+    });
+  }
+
   void _addExpenseToFirestore(Expense expense) async {
     try {
-      final docRef = await _firestore.collection('groups').doc(widget.groupId).collection('expenses').add(expense.toMap());
+      final docRef = await _firestore
+          .collection('groups')
+          .doc(widget.groupId)
+          .collection('expenses')
+          .add(expense.toMap());
       await docRef.update({'id': docRef.id});
       _loadExpenses();
     } catch (e) {
@@ -67,12 +134,15 @@ class _SingleGroupState extends State<SingleGroup> {
 
   void _editExpense(Expense expense) async {
     try {
-      await _firestore.collection('groups').doc(widget.groupId).collection('expenses').doc(expense.id).update({
+      await _firestore
+          .collection('groups')
+          .doc(widget.groupId)
+          .collection('expenses')
+          .doc(expense.id)
+          .update({
         'item': _expenseNameController.text,
         'price': double.parse(_amountController.text),
         'user': _paidByController.text,
-        'didYouSplit': _didYouSplit,
-        'didYouPay': _didYouPay,
       });
       _loadExpenses();
     } catch (e) {
@@ -93,6 +163,7 @@ class _SingleGroupState extends State<SingleGroup> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
+        const SizedBox(height: 10),
         Padding(
           padding: const EdgeInsets.all(12),
           child: Center(
@@ -106,7 +177,18 @@ class _SingleGroupState extends State<SingleGroup> {
                   ),
                 );
               },
-              child: const Text('Settle It All'),
+              style: ElevatedButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)
+                ),
+                backgroundColor: null
+              ),
+              child: const Text(
+                'Settle It All',
+                style: TextStyle(
+                  color: Colors.blue,
+                )
+              ),
             ),
           ),
         ),
@@ -122,16 +204,12 @@ class _SingleGroupState extends State<SingleGroup> {
                   _expenseNameController.text = ex.item;
                   _amountController.text = ex.price.toString();
                   _paidByController.text = ex.user;
-                  _didYouSplit = ex.didYouSplit;
-                  _didYouPay = ex.didYouPay;
-                  _showEditExpenseDialog(ex);
+                  _showEditExpenseDialog(ex, context);
                 },
                 date: ex.date,
                 item: ex.item,
                 price: ex.price,
                 user: ex.user,
-                didYouPay: ex.didYouPay,
-                didYouSplit: ex.didYouSplit,
                 id: ex.id,
               );
             },
@@ -144,10 +222,19 @@ class _SingleGroupState extends State<SingleGroup> {
             children: [
               FloatingActionButton.extended(
                 onPressed: () {
+                  _showMembers(context);
+                },
+                label:
+                    const Text('Members', style: TextStyle(color: Colors.blue)),
+              ),
+              const SizedBox(width: 10),
+              FloatingActionButton.extended(
+                onPressed: () {
                   _showAddExpenseDialog(context);
                 },
-                label: const Text('+ Add Expense', style: TextStyle(color: Colors.blue)),
-              )
+                label: const Text('+ Add Expense',
+                    style: TextStyle(color: Colors.blue)),
+              ),
             ],
           ),
         ),
@@ -155,24 +242,107 @@ class _SingleGroupState extends State<SingleGroup> {
     );
   }
 
-  void _showEditExpenseDialog(Expense expense) {
-    _expenseNameController.text = expense.item;
-    _amountController.text = expense.price.toString();
-    _paidByController.text = expense.user;
-    _didYouSplit = expense.didYouSplit;
-    _didYouPay = expense.didYouPay;
+  void _showMembers(BuildContext context) {
+    TextEditingController _newUserController = TextEditingController();
 
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Edit Expense'),
+          title: const Text('Members'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               TextField(
-                controller: _paidByController,
+                controller: _newUserController,
+                decoration: const InputDecoration(labelText: 'Add new member'),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    if (_newUserController.text.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content: Text('Please fill in all fields.')),
+                      );
+                      return;
+                    }
+                    if (_groupMembers.contains(_newUserController.text)) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('User already exists.')),
+                      );
+                      return;
+                    }
+                    _groupMembers.add(_newUserController.text);
+                    updateMembersFirestore();
+                  });
+                  Navigator.of(context).pop();
+                  _showMembers(context);
+                },
+                child: const Text('Add'),
+              ),
+              const SizedBox(height: 20),
+              for (var member in _groupMembers)
+                ListTile(
+                  title: Text(member),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.delete),
+                    onPressed: () {
+                      setState(() {
+                        _groupMembers.remove(member);
+                        updateMembersFirestore();
+                        removeExpenseByMember(member);
+                      });
+                      Navigator.of(context).pop();
+                      _showMembers(context);
+                    },
+                  ),
+                ),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Close'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showEditExpenseDialog(Expense expense, BuildContext context) {
+    _expenseNameController.text = expense.item;
+    _amountController.text = expense.price.toString();
+    _paidByController.text = expense.user;
+    String? selectedUser = expense.user;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Edit Expense'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              DropdownButtonFormField<String>(
+                value: selectedUser,
                 decoration: const InputDecoration(labelText: 'Paid by'),
+                items: _groupMembers.map((String user) {
+                  return DropdownMenuItem<String>(
+                    value: user,
+                    child: Text(user),
+                  );
+                }).toList(),
+                onChanged: (String? newValue) {
+                  setState(() {
+                    selectedUser = newValue;
+                    _paidByController.text = newValue ?? '';
+                  });
+                },
               ),
               TextField(
                 controller: _expenseNameController,
@@ -182,32 +352,6 @@ class _SingleGroupState extends State<SingleGroup> {
                 controller: _amountController,
                 decoration: const InputDecoration(labelText: 'Amount'),
                 keyboardType: TextInputType.number,
-              ),
-              Row(
-                children: [
-                  Checkbox(
-                    value: _didYouSplit,
-                    onChanged: (bool? newValue) {
-                      setState(() {
-                        _didYouSplit = newValue ?? false;
-                      });
-                    },
-                  ),
-                  const Text('Did you split this expense?'),
-                ],
-              ),
-              Row(
-                children: [
-                  Checkbox(
-                    value: _didYouPay,
-                    onChanged: (bool? newValue) {
-                      setState(() {
-                        _didYouPay = newValue ?? false;
-                      });
-                    },
-                  ),
-                  const Text('Did you pay for this expense?'),
-                ],
               ),
             ],
           ),
@@ -235,8 +379,6 @@ class _SingleGroupState extends State<SingleGroup> {
                   item: _expenseNameController.text,
                   price: double.parse(_amountController.text),
                   user: _paidByController.text,
-                  didYouPay: _didYouPay,
-                  didYouSplit: _didYouSplit,
                   date: expense.date,
                 );
                 _editExpense(editedExpense);
@@ -253,8 +395,8 @@ class _SingleGroupState extends State<SingleGroup> {
     _expenseNameController.clear();
     _amountController.clear();
     _paidByController.clear();
-    _didYouSplit = false;
-    _didYouPay = false;
+
+    String? _selectedUser;
 
     showDialog(
       context: context,
@@ -264,9 +406,21 @@ class _SingleGroupState extends State<SingleGroup> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              TextField(
-                controller: _paidByController,
+              DropdownButtonFormField<String>(
+                value: _selectedUser,
                 decoration: const InputDecoration(labelText: 'Paid by'),
+                items: _groupMembers.map((String user) {
+                  return DropdownMenuItem<String>(
+                    value: user,
+                    child: Text(user),
+                  );
+                }).toList(),
+                onChanged: (String? newValue) {
+                  setState(() {
+                    _selectedUser = newValue;
+                    _paidByController.text = newValue ?? '';
+                  });
+                },
               ),
               TextField(
                 controller: _expenseNameController,
@@ -276,32 +430,6 @@ class _SingleGroupState extends State<SingleGroup> {
                 controller: _amountController,
                 decoration: const InputDecoration(labelText: 'Amount'),
                 keyboardType: TextInputType.number,
-              ),
-              Row(
-                children: [
-                  Checkbox(
-                    value: _didYouSplit,
-                    onChanged: (bool? newValue) {
-                      setState(() {
-                        _didYouSplit = newValue ?? false;
-                      });
-                    },
-                  ),
-                  const Text('Did you split this expense?'),
-                ],
-              ),
-              Row(
-                children: [
-                  Checkbox(
-                    value: _didYouPay,
-                    onChanged: (bool? newValue) {
-                      setState(() {
-                        _didYouPay = newValue ?? false;
-                      });
-                    },
-                  ),
-                  const Text('Did you pay for this expense?'),
-                ],
               ),
             ],
           ),
@@ -329,8 +457,6 @@ class _SingleGroupState extends State<SingleGroup> {
                   item: _expenseNameController.text,
                   price: double.parse(_amountController.text),
                   user: _paidByController.text,
-                  didYouPay: _didYouPay,
-                  didYouSplit: _didYouSplit,
                   id: '',
                 );
                 _addExpenseToFirestore(expense);
@@ -345,7 +471,9 @@ class _SingleGroupState extends State<SingleGroup> {
 
   AppBar appBar() {
     return AppBar(
-      title: Text(widget.groupId, style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+      title: Text(groupName,
+          style: TextStyle(
+              color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
       backgroundColor: const Color(0xFF76BBBF),
       centerTitle: true,
       leading: GestureDetector(
@@ -356,7 +484,6 @@ class _SingleGroupState extends State<SingleGroup> {
       ),
     );
   }
-
 
   BottomNavigationBar bottomBar() {
     return BottomNavigationBar(

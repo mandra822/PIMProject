@@ -47,26 +47,24 @@ class FirestoreService {
     return totalExpenses;
   }
 
-  Future<Map<String, double>> calculateUserBalances(String groupId) async {
-    final Map<String, double> balances = {};
+  Future<Map<String, double>> calculateUserBalances(String groupId, List<String> groupMembers) async {
+    final Map<String, double> balances = {}; // Mapa bilansów dla użytkowników
 
     try {
+      // Pobranie wydatków dla grupy
       final expenses = await fetchExpenses(groupId);
 
       for (var expense in expenses) {
-        final double perPerson = expense.didYouSplit
-            ? expense.price / expenses.length 
-            : 0.0;
+        // Obliczanie ile przypada na jedną osobę
+        final double perPerson = expense.price / groupMembers.length;
 
+        // Dodajemy koszt do bilansu użytkownika który zapłacił
         balances[expense.user] = (balances[expense.user] ?? 0.0) + expense.price;
 
-        if (expense.didYouSplit) {
-          for (var doc in expenses) {
-            if (doc.user != expense.user) {
-              balances[doc.user] = (balances[doc.user] ?? 0.0) - perPerson;
-            }
-          }
-        }
+        // Jeśli wydatek został podzielony odejmujemy proporcjonalną część innym członkom grupy
+        for (var member in groupMembers) {
+          balances[member] = (balances[member] ?? 0.0) - perPerson;
+        } 
       }
     } catch (e) {
       print("Error in calculateUserBalances: $e");
@@ -75,6 +73,7 @@ class FirestoreService {
 
     return balances;
   }
+
 
   // pobieranie wydatków dla grupy
   Future<List<Expense>> fetchExpenses(String groupId) async {
@@ -92,8 +91,6 @@ class FirestoreService {
           item: data['item'] as String,
           price: (data['price'] as num).toDouble(),
           user: data['user'] as String,
-          didYouPay: data['didYouPay'] as bool,
-          didYouSplit: data['didYouSplit'] as bool,
           id: data['id'] as String,
         );
       }).toList();
@@ -122,6 +119,36 @@ class FirestoreService {
       return expenses;
     } catch (e) {
       print("Error fetching expenses: $e");
+      rethrow;
+    }
+  }
+
+  Future<Map<String, dynamic>> fetchGroupDetails(String groupId) async {
+      try {
+        final groupSnapshot = await _db.collection('groups').doc(groupId).get();
+        if (groupSnapshot.exists) {
+          return groupSnapshot.data() as Map<String, dynamic>;
+        } else {
+          throw Exception("Group not found");
+        }
+      } catch (e) {
+        print("Error fetching group details: $e");
+        rethrow;
+      }
+    }
+
+
+  Future<List<String>> fetchGroupMembers(String groupId) async {
+    try {
+      final groupSnapshot = await _db.collection('groups').doc(groupId).get();
+      if (groupSnapshot.exists) {
+        final data = groupSnapshot.data();
+        return List<String>.from(data?['groupMembers'] ?? []);
+      } else {
+        throw Exception("Group not found");
+      }
+    } catch (e) {
+      print("Error fetching group members: $e");
       rethrow;
     }
   }
