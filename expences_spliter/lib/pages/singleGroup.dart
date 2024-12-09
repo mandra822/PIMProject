@@ -163,6 +163,7 @@ class _SingleGroupState extends State<SingleGroup> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
+        const SizedBox(height: 10),
         Padding(
           padding: const EdgeInsets.all(12),
           child: Center(
@@ -176,7 +177,18 @@ class _SingleGroupState extends State<SingleGroup> {
                   ),
                 );
               },
-              child: const Text('Settle It All'),
+              style: ElevatedButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)
+                ),
+                backgroundColor: null
+              ),
+              child: const Text(
+                'Settle It All',
+                style: TextStyle(
+                  color: Colors.blue,
+                )
+              ),
             ),
           ),
         ),

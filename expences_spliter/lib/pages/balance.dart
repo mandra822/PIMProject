@@ -10,7 +10,18 @@ class GroupExpensesPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Settlement")),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF76BBBF),
+        title: const Text(
+          "Settlement",
+          style: TextStyle(
+            color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold
+          )
+        ),
+        iconTheme: const IconThemeData(
+          color: Colors.white, 
+        ),
+      ),
       body: Column(
         children: [
           // FutureBuilder dla łącznych wydatków grupy
@@ -31,8 +42,8 @@ class GroupExpensesPage extends StatelessWidget {
                     "Total Group Expenses: ${totalExpenses.toStringAsFixed(2)}",
                     style: const TextStyle(
                       fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blue,
+                      fontWeight: FontWeight.normal,
+                      color: Colors.black87,
                     ),
                   ),
                 );
@@ -41,7 +52,7 @@ class GroupExpensesPage extends StatelessWidget {
           ),
 
           // FutureBuilder dla sald użytkowników
-          Expanded(
+          Flexible(
             child: FutureBuilder<List<String>>(
               future: FirestoreService().fetchGroupMembers(groupId),
               builder: (context, membersSnapshot) {
@@ -67,44 +78,58 @@ class GroupExpensesPage extends StatelessWidget {
                         final transactions = _calculateTransactions(userBalances);
 
                         return Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
                           children: [
-                            Expanded(
+                            Flexible(
                               child: ListView(
                                 children: userBalances.entries.map((entry) {
                                   final isPositive = entry.value >= 0;
-                                  return ListTile(
-                                    title: Text(entry.key),
-                                    subtitle: Text(
-                                      isPositive
-                                          ? "Is owed: ${entry.value.toStringAsFixed(2)}"
-                                          : "Needs to Pay: ${(entry.value.abs()).toStringAsFixed(2)}",
-                                      style: TextStyle(
-                                        color: isPositive ? Colors.green : Colors.red,
+                                  return Card (
+                                    child: ListTile(
+                                      title: Text(entry.key),
+                                      trailing: Text(
+                                        isPositive
+                                            ? "Is owed: ${entry.value.toStringAsFixed(2)}"
+                                            : "Needs to Pay: ${(entry.value.abs()).toStringAsFixed(2)}",
+                                        style: TextStyle(
+                                          color: isPositive ? Colors.blue : Colors.red,
+                                          fontSize: 16, fontWeight: FontWeight.bold
+                                        ),
                                       ),
-                                    ),
+                                    )
                                   );
                                 }).toList(),
                               ),
                             ),
-                            const Divider(),
+
                             const Padding(
                               padding: EdgeInsets.all(8.0),
                               child: Text(
                                 "Who owes whom:",
                                 style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.normal,
+                                  color: Colors.black87,
                                 ),
                               ),
                             ),
-                            Expanded(
+                            Flexible(
                               child: ListView(
                                 children: transactions.map((transaction) {
-                                  return ListTile(
-                                    title: Text(
-                                      "${transaction['from']} owes ${transaction['to']}: ${transaction['amount'].toStringAsFixed(2)}",
-                                      style: const TextStyle(fontSize: 14),
-                                    ),
+                                  return Card(
+                                    child: ListTile(
+                                      title: Text(
+                                        "${transaction['from']} owes ${transaction['to']}",
+                                        style: const TextStyle(fontSize: 16),
+                                      ),
+                                      trailing: Text(
+                                        "${transaction['amount'].toStringAsFixed(2)}",
+                                        style: TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 16, fontWeight: FontWeight.bold
+                                        ),
+                                      ),
+                                    )
                                   );
                                 }).toList(),
                               ),
