@@ -47,23 +47,27 @@ class FirestoreService {
     return totalExpenses;
   }
 
-  Future<Map<String, double>> calculateUserBalances(String groupId) async {
-    final Map<String, double> balances = {};
+  Future<Map<String, double>> calculateUserBalances(String groupId, List<String> groupMembers) async {
+    final Map<String, double> balances = {}; // Mapa bilansów dla użytkowników
 
     try {
+      // Pobranie wydatków dla grupy
       final expenses = await fetchExpenses(groupId);
 
       for (var expense in expenses) {
+        // Obliczanie ile przypada na jedną osobę
         final double perPerson = expense.didYouSplit
-            ? expense.price / expenses.length 
+            ? expense.price / groupMembers.length 
             : 0.0;
 
+        // Dodajemy koszt do bilansu użytkownika który zapłacił
         balances[expense.user] = (balances[expense.user] ?? 0.0) + expense.price;
 
+        // Jeśli wydatek został podzielony odejmujemy proporcjonalną część innym członkom grupy
         if (expense.didYouSplit) {
-          for (var doc in expenses) {
-            if (doc.user != expense.user) {
-              balances[doc.user] = (balances[doc.user] ?? 0.0) - perPerson;
+          for (var member in groupMembers) {
+            if (member != expense.user) {
+              balances[member] = (balances[member] ?? 0.0) - perPerson;
             }
           }
         }
@@ -75,6 +79,7 @@ class FirestoreService {
 
     return balances;
   }
+
 
   // pobieranie wydatków dla grupy
   Future<List<Expense>> fetchExpenses(String groupId) async {
@@ -126,4 +131,17 @@ class FirestoreService {
     }
   }
 
+  Future<Map<String, dynamic>> fetchGroupDetails(String groupId) async {
+      try {
+        final groupSnapshot = await _db.collection('groups').doc(groupId).get();
+        if (groupSnapshot.exists) {
+          return groupSnapshot.data() as Map<String, dynamic>;
+        } else {
+          throw Exception("Group not found");
+        }
+      } catch (e) {
+        print("Error fetching group details: $e");
+        rethrow;
+      }
+    }
 }
