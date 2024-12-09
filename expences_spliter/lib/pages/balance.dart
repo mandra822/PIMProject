@@ -6,10 +6,6 @@ class GroupExpensesPage extends StatelessWidget {
 
   GroupExpensesPage({required this.groupId});
 
-  Future<List<String>> fetchGroupMembers(String groupId) async {
-    final groupSnapshot = await FirestoreService().fetchGroupDetails(groupId);
-    return List<String>.from(groupSnapshot['members'] ?? []);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +43,7 @@ class GroupExpensesPage extends StatelessWidget {
           // FutureBuilder dla sald użytkowników
           Expanded(
             child: FutureBuilder<List<String>>(
-              future: fetchGroupMembers(groupId),
+              future: FirestoreService().fetchGroupMembers(groupId),
               builder: (context, membersSnapshot) {
                 if (membersSnapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());

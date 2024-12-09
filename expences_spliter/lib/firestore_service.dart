@@ -144,4 +144,21 @@ class FirestoreService {
         rethrow;
       }
     }
+
+
+  Future<List<String>> fetchGroupMembers(String groupId) async {
+    try {
+      final groupSnapshot = await _db.collection('groups').doc(groupId).get();
+      if (groupSnapshot.exists) {
+        final data = groupSnapshot.data();
+        return List<String>.from(data?['groupMembers'] ?? []);
+      } else {
+        throw Exception("Group not found");
+      }
+    } catch (e) {
+      print("Error fetching group members: $e");
+      rethrow;
+    }
+  }
+
 }
