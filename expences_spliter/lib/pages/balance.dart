@@ -76,7 +76,7 @@ class GroupExpensesPage extends StatelessWidget {
                                     title: Text(entry.key),
                                     subtitle: Text(
                                       isPositive
-                                          ? "Owed: ${entry.value.toStringAsFixed(2)}"
+                                          ? "Bilans: ${entry.value.toStringAsFixed(2)}"
                                           : "Needs to Pay: ${(entry.value.abs()).toStringAsFixed(2)}",
                                       style: TextStyle(
                                         color: isPositive ? Colors.green : Colors.red,
@@ -123,11 +123,11 @@ class GroupExpensesPage extends StatelessWidget {
     );
   }
 
-  // Metoda obliczająca transakcje między użytkownikami
   List<Map<String, dynamic>> _calculateTransactions(Map<String, double> balances) {
     final creditors = <String, double>{};
     final debtors = <String, double>{};
 
+    // Podziel użytkowników na wierzycieli i dłużników
     balances.forEach((user, balance) {
       if (balance > 0) {
         creditors[user] = balance;
@@ -138,12 +138,17 @@ class GroupExpensesPage extends StatelessWidget {
 
     final transactions = <Map<String, dynamic>>[];
 
-    debtors.forEach((debtor, debt) {
-      creditors.forEach((creditor, credit) {
-        if (debt == 0) return;
-        if (credit == 0) return;
+    // Oblicz transakcje między dłużnikami a wierzycielami
+    for (final debtor in debtors.keys.toList()) {
+      double debt = debtors[debtor]!;
 
-        final payment = (debt > credit) ? credit : debt;
+      for (final creditor in creditors.keys.toList()) {
+        double credit = creditors[creditor]!;
+
+        // Jeżeli dług lub kredyt jest 0, przejdź do następnej iteracji
+        if (debt <= 0 || credit <= 0) continue;
+
+        final payment = debt > credit ? credit : debt;
 
         transactions.add({
           'from': debtor,
@@ -151,11 +156,22 @@ class GroupExpensesPage extends StatelessWidget {
           'amount': payment,
         });
 
-        debt -= payment;
+        // Zaktualizowanie salda dłużnika i wierzyciela
+        debtors[debtor] = debt - payment;
         creditors[creditor] = credit - payment;
-      });
-    });
+      }
+
+      // Jeśli dług dłużnika jest spłacony, usuń go z mapy
+      if (debtors[debtor]! <= 0) {
+        debtors.remove(debtor);
+      }
+    }
+
+    // Usuwanie wierzycieli, którzy spłacili swój kredyt
+    creditors.removeWhere((key, value) => value <= 0);
 
     return transactions;
   }
+
+
 }
